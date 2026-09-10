@@ -56,8 +56,14 @@ tiene pruebas. La capa de Android solo pinta y guarda.
 ```
 
 Cada push a `main` compila el APK en GitHub Actions y lo deja como artefacto
-descargable en la pestaña Actions. Va firmado con la clave de depuración, así
-que se instala en el móvil sin más trámite.
+descargable en la pestaña Actions. Se instala en el móvil sin más trámite.
+
+La clave de depuración (`app/debug.keystore`) está en el repositorio a
+propósito. Sin ella cada ejecución del CI genera la suya, los APK salen firmados
+distinto, y Android rechaza instalar uno encima de otro con "aplicación no
+instalada". No es un secreto: la clave de depuración usa la contraseña "android"
+por diseño y no da acceso a nada. Publicar en Play Store sí exigiría una clave
+de firma propia, esa fuera del repositorio.
 
 ## El diccionario
 

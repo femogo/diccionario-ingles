@@ -13,11 +13,33 @@ android {
         applicationId = "com.femogo.vocab"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1"
+        versionCode = 2
+        versionName = "0.2"
+    }
+
+    // Clave de depuración fija, guardada en el repositorio a propósito.
+    //
+    // Sin esto cada ejecución de la integración continua genera su propia clave,
+    // los APK salen firmados distinto, y Android rechaza instalar uno encima de
+    // otro con "aplicación no instalada". Con una clave fija cada compilación
+    // actualiza la anterior y conserva el progreso.
+    //
+    // No es un secreto: la clave de depuración de Android usa la contraseña
+    // "android" por diseño y no da acceso a nada. Publicar en Play Store sí
+    // exigiría una clave de firma distinta, esa fuera del repositorio.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

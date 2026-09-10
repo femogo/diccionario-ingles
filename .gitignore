@@ -9,4 +9,5 @@ captures/
 .cxx/
 *.apk
 *.keystore
+!app/debug.keystore
 tools/fuente/
