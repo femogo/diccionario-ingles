@@ -30,6 +30,16 @@ dedup = "--con-flexiones" not in sys.argv
 # Lista opcional de palabras a excluir, una por linea. La lista de frecuencia
 # viene de subtitulos, asi que trae malsonantes de uso muy real; que entren o no
 # es decision de quien monta el diccionario, no del script.
+# Lo que se pidio en cada lote, para comprobar que la respuesta corresponde.
+LOTES = pathlib.Path(__file__).with_name("lotes")
+pedido = {}
+if LOTES.is_dir():
+    for lote in LOTES.glob("lote_*.txt"):
+        for linea in lote.read_text(encoding="utf-8").splitlines():
+            if "|" in linea:
+                rank, palabra = linea.strip().split("|", 1)
+                pedido[int(rank)] = palabra
+
 EXCLUIR = pathlib.Path(__file__).with_name("excluir.txt")
 excluidas = set()
 if EXCLUIR.exists():
@@ -39,7 +49,7 @@ if EXCLUIR.exists():
         if l.strip() and not l.startswith("#")
     }
 
-filas, errores = {}, []
+filas, errores, desajustes = {}, [], []
 
 for ruta in argumentos:
     for n, linea in enumerate(pathlib.Path(ruta).read_text(encoding="utf-8").splitlines(), 1):
@@ -54,6 +64,13 @@ for ruta in argumentos:
         wid, en, lemma, pos, es, es_alt, cefr, hint = [c.strip() for c in campos]
         if not wid.isdigit():
             errores.append(f"{sitio}  id no numerico: {wid!r}")
+            continue
+        # La comprobacion que importa: que la respuesta sea de la palabra que se
+        # pidio. Un modelo que pierde el hilo genera "las siguientes palabras
+        # frecuentes" de memoria, con el formato perfecto y el contenido ajeno.
+        esperada = pedido.get(int(wid))
+        if esperada is not None and esperada != en.strip().lower():
+            desajustes.append(f"{sitio}  id {wid}: se pidio {esperada!r}, devolvio {en.strip().lower()!r}")
             continue
         if pos not in POS:
             errores.append(f"{sitio}  pos invalida: {pos!r}")
@@ -112,6 +129,14 @@ if dedup:
 if apartadas:
     print(f"excluidas    {apartadas} por excluir.txt")
 print(f"errores      {len(errores)}")
+if desajustes:
+    print(f"DESAJUSTES   {len(desajustes)} respuestas no corresponden a la palabra pedida")
+    for d in desajustes[:10]:
+        print("   ", d)
+    if len(desajustes) > 10:
+        print(f"    ... y {len(desajustes)-10} mas")
+    print("    El modelo perdio el hilo y genero palabras por su cuenta.")
+    print("    Vuelve a pegar el prompt maestro y repite ese lote.")
 for e in errores[:40]:
     print("   ", e)
 if len(errores) > 40:
@@ -129,10 +154,16 @@ if filas:
     if huecos:
         print(f"\nFALTAN {len(huecos)} ids: {huecos[:20]}{' ...' if len(huecos)>20 else ''}")
 
+if desajustes:
+    # No se sobrescribe un words.txt bueno con el resultado de un lote que el
+    # modelo se invento.
+    print("\nno se escribe words.txt: corrige los desajustes primero")
+    sys.exit(1)
+
 with open("words.txt", "w", encoding="utf-8") as fh:
     fh.write("# Formato: rank|en|lemma|pos|es|es_alt|cefr|hint\n")
     for fila in sorted(utiles):
         fh.write("|".join(str(c) for c in fila) + "\n")
 print(f"\nescrito words.txt con {len(utiles)} palabras")
 print("Pasalo al movil e importalo desde Ajustes > Importar diccionario.")
-sys.exit(1 if errores else 0)
+sys.exit(1 if errores or desajustes else 0)

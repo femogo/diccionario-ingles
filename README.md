@@ -73,7 +73,10 @@ empezar. Para ampliarlo:
    ```
 
    Escribe `words.txt` y avisa de líneas rotas, ids que faltan y traducciones
-   ambiguas. Por defecto se queda con **una sola forma por lema**: la lista de
+   ambiguas. Sobre todo comprueba que **cada respuesta corresponda a la palabra
+   que se pidió**: un modelo que pierde el hilo genera "las siguientes palabras
+   frecuentes" de memoria, con el formato perfecto y el contenido ajeno. Si eso
+   pasa, el lote se rechaza entero y no se toca el `words.txt` que ya tenías. Por defecto se queda con **una sola forma por lema**: la lista de
    frecuencia cuenta formas, no lemas, así que sin ese paso `is`, `was`, `are`,
    `were`, `been` y `am` entran las seis traducidas por "ser" y el modo
    español-inglés pasa a tener seis respuestas válidas. Con `--con-flexiones` se
