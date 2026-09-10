@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose pinta toda la interfaz; este tema solo evita la barra de acción
+         del sistema y el parpadeo blanco al arrancar. -->
+    <style name="Theme.Vocab" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

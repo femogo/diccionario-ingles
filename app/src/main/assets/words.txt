@@ -1,0 +1,203 @@
+# Diccionario semilla: 200 palabras más frecuentes del inglés.
+# Formato: rank|en|lemma|pos|es|es_alt|cefr|hint
+# Amplía este archivo con la salida de tools/prompt_chatgpt.txt
+1|you|you|pron|tú|usted;vosotros;ustedes|A1|-
+2|i|i|pron|yo|-|A1|-
+3|the|the|det|el|la;los;las|A1|definite article
+4|to|to|prep|a|hacia;para|A1|direction or purpose
+5|a|a|det|un|una|A1|indefinite article
+6|it|it|pron|ello|lo;eso|A1|neuter subject or object
+7|and|and|conj|y|e|A1|-
+8|that|that|det|ese|aquel;eso|A1|pointing at something
+9|of|of|prep|de|-|A1|belonging or origin
+10|is|be|verb|ser|estar|A1|third person singular
+11|in|in|prep|en|dentro de|A1|location inside
+12|what|what|pron|qué|lo que|A1|-
+13|we|we|pron|nosotros|nosotras|A1|-
+14|me|me|pron|me|mí|A1|object form of I
+15|this|this|det|este|esta;esto|A1|near the speaker
+16|he|he|pron|él|-|A1|-
+17|for|for|prep|para|por|A1|-
+18|my|my|det|mi|mis|A1|-
+19|on|on|prep|sobre|encima de;en|A1|resting on a surface
+20|have|have|verb|tener|haber|A1|-
+21|your|your|det|tu|su;vuestro|A1|-
+22|do|do|verb|hacer|-|A1|-
+23|was|be|verb|ser|estar|A1|past tense form
+24|no|no|det|ninguno|no|A1|-
+25|not|not|adv|no|-|A1|negation
+26|be|be|verb|ser|estar|A1|base form
+27|are|be|verb|ser|estar|A1|plural present form
+28|don|don|drop|-|-|-|-
+29|know|know|verb|saber|conocer|A1|-
+30|can|can|verb|poder|-|A1|ability
+31|with|with|prep|con|-|A1|-
+32|but|but|conj|pero|sino|A1|-
+33|all|all|det|todo|todos|A1|-
+34|so|so|adv|así|tan;entonces|A1|-
+35|just|just|adv|solo|justo;apenas|A1|nothing more than
+36|there|there|adv|allí|ahí;allá|A1|in that place
+37|here|here|adv|aquí|acá|A1|in this place
+38|they|they|pron|ellos|ellas|A1|-
+39|like|like|prep|como|-|A1|similar to
+40|get|get|verb|conseguir|obtener;recibir|A1|-
+41|she|she|pron|ella|-|A1|-
+42|go|go|verb|ir|irse|A1|-
+43|if|if|conj|si|-|A1|condition
+44|right|right|adj|correcto|adecuado|A1|not wrong
+45|out|out|adv|fuera|afuera|A1|-
+46|about|about|prep|sobre|acerca de|A1|on the topic of
+47|up|up|adv|arriba|hacia arriba|A1|-
+48|at|at|prep|en|a|A1|at a point or place
+49|him|him|pron|le|lo;él|A1|object form of he
+50|now|now|adv|ahora|ya|A1|-
+51|oh|oh|drop|-|-|-|-
+52|one|one|num|uno|una|A1|-
+53|come|come|verb|venir|llegar|A1|-
+54|well|well|adv|bien|-|A1|in a good way
+55|her|her|det|su|sus|A1|belonging to a woman
+56|how|how|adv|cómo|-|A1|-
+57|yeah|yeah|drop|-|-|-|-
+58|will|will|verb|ir a|-|A1|future auxiliary
+59|got|get|verb|conseguir|obtener|A1|past tense form
+60|want|want|verb|querer|desear|A1|-
+61|think|think|verb|pensar|creer|A1|-
+62|as|as|conj|como|mientras|A1|-
+63|see|see|verb|ver|mirar|A1|-
+64|did|do|verb|hacer|-|A1|past tense form
+65|good|good|adj|bueno|buen|A1|-
+66|who|who|pron|quién|-|A1|-
+67|why|why|adv|por qué|-|A1|-
+68|from|from|prep|desde|de|A1|starting point
+69|let|let|verb|dejar|permitir|A1|allow
+70|his|his|det|su|sus|A1|belonging to a man
+71|yes|yes|interj|sí|-|A1|-
+72|when|when|adv|cuándo|cuando|A1|-
+73|going|go|verb|ir|yendo|A1|present participle
+74|time|time|noun|tiempo|hora;vez|A1|-
+75|an|a|det|un|una|A1|before a vowel sound
+76|okay|okay|adj|vale|de acuerdo|A1|-
+77|back|back|adv|atrás|de vuelta|A1|returning
+78|look|look|verb|mirar|ver|A1|-
+79|us|we|pron|nos|nosotros|A1|object form of we
+80|would|will|verb|haría|-|A2|conditional auxiliary
+81|them|they|pron|los|les;ellos|A1|object form of they
+82|where|where|adv|dónde|donde|A1|-
+83|were|be|verb|ser|estar|A1|past plural form
+84|take|take|verb|tomar|coger;llevar|A1|-
+85|then|then|adv|entonces|luego|A1|-
+86|had|have|verb|tener|haber|A1|past tense form
+87|or|or|conj|o|u|A1|-
+88|been|be|verb|sido|estado|A1|past participle
+89|our|our|det|nuestro|nuestra;nuestros|A1|-
+90|gonna|gonna|drop|-|-|-|-
+91|tell|tell|verb|decir|contar|A1|-
+92|really|really|adv|realmente|de verdad|A1|-
+93|man|man|noun|hombre|-|A1|adult male
+94|some|some|det|algunos|algo de|A1|-
+95|say|say|verb|decir|-|A1|-
+96|hey|hey|drop|-|-|-|-
+97|could|can|verb|podría|-|A2|past or polite form
+98|didn|didn|drop|-|-|-|-
+99|by|by|prep|por|junto a|A1|-
+100|need|need|verb|necesitar|-|A1|-
+101|something|something|pron|algo|-|A1|-
+102|has|have|verb|tener|haber|A1|third person singular
+103|too|too|adv|demasiado|también|A1|-
+104|more|more|adv|más|-|A1|-
+105|way|way|noun|manera|forma;camino|A1|-
+106|down|down|adv|abajo|hacia abajo|A1|-
+107|make|make|verb|hacer|fabricar|A1|-
+108|very|very|adv|muy|-|A1|-
+109|never|never|adv|nunca|jamás|A1|-
+110|only|only|adv|solo|únicamente|A1|-
+111|people|people|noun|gente|personas|A1|-
+112|over|over|prep|encima|sobre;por encima de|A1|above or across
+113|because|because|conj|porque|-|A1|-
+114|little|little|adj|pequeño|poco|A1|small in size
+115|please|please|adv|por favor|-|A1|-
+116|love|love|verb|amar|querer|A1|-
+117|should|should|verb|deber|-|A2|obligation or advice
+118|mean|mean|verb|significar|querer decir|A1|-
+119|said|say|verb|dijo|-|A1|past tense form
+120|sorry|sorry|adj|lo siento|perdón|A1|-
+121|give|give|verb|dar|entregar|A1|-
+122|off|off|adv|apagado|fuera|A1|not working or away
+123|am|be|verb|soy|estoy|A1|first person of be
+124|thank|thank|verb|agradecer|dar las gracias|A1|-
+125|any|any|det|alguno|cualquier|A1|-
+126|two|two|num|dos|-|A1|-
+127|even|even|adv|incluso|hasta|A2|-
+128|much|much|adv|mucho|-|A1|-
+129|doing|do|verb|hacer|haciendo|A1|present participle
+130|sure|sure|adj|seguro|cierto|A1|certain
+131|thing|thing|noun|cosa|-|A1|-
+132|these|these|det|estos|estas|A1|-
+133|help|help|verb|ayudar|-|A1|-
+134|first|first|adj|primero|primer|A1|-
+135|into|into|prep|dentro de|hacia dentro|A1|movement inside
+136|anything|anything|pron|nada|cualquier cosa|A1|-
+137|still|still|adv|todavía|aún|A1|up to now
+138|find|find|verb|encontrar|hallar|A1|-
+139|life|life|noun|vida|-|A1|-
+140|nothing|nothing|pron|nada|-|A1|-
+141|sir|sir|drop|-|-|-|-
+142|day|day|noun|día|-|A1|-
+143|god|god|noun|dios|-|A1|-
+144|work|work|verb|trabajar|funcionar|A1|-
+145|their|their|det|su|sus|A1|belonging to them
+146|uh|uh|drop|-|-|-|-
+147|again|again|adv|otra vez|de nuevo|A1|-
+148|maybe|maybe|adv|quizás|tal vez|A1|-
+149|must|must|verb|deber|tener que|A2|strong obligation
+150|before|before|prep|antes|antes de|A1|-
+151|other|other|adj|otro|otra;otros|A1|-
+152|wait|wait|verb|esperar|aguardar|A1|-
+153|stop|stop|verb|parar|detener|A1|-
+154|call|call|verb|llamar|telefonear|A1|-
+155|after|after|prep|después|después de|A1|-
+156|won|won|drop|-|-|-|-
+157|talk|talk|verb|hablar|conversar|A1|-
+158|away|away|adv|lejos|fuera|A1|at a distance
+159|than|than|conj|que|-|A1|used in comparisons
+160|thought|think|verb|pensó|creyó|A1|past tense form
+161|home|home|noun|casa|hogar|A1|-
+162|night|night|noun|noche|-|A1|-
+163|put|put|verb|poner|colocar|A1|-
+164|great|great|adj|estupendo|genial;grande|A1|very good
+165|those|those|det|esos|aquellos|A1|-
+166|last|last|adj|último|pasado|A1|final or previous
+167|better|better|adj|mejor|-|A1|comparative of good
+168|everything|everything|pron|todo|-|A1|-
+169|told|tell|verb|dijo|contó|A1|past tense form
+170|new|new|adj|nuevo|-|A1|-
+171|things|thing|noun|cosas|-|A1|plural form
+172|always|always|adv|siempre|-|A1|-
+173|keep|keep|verb|guardar|mantener|A1|-
+174|long|long|adj|largo|-|A1|-
+175|years|year|noun|años|-|A1|plural form
+176|leave|leave|verb|irse|dejar;salir|A1|-
+177|does|do|verb|hacer|-|A1|third person singular
+178|money|money|noun|dinero|-|A1|-
+179|around|around|prep|alrededor|por|A1|-
+180|doesn|doesn|drop|-|-|-|-
+181|name|name|noun|nombre|-|A1|-
+182|place|place|noun|lugar|sitio|A1|-
+183|ever|ever|adv|alguna vez|nunca|A2|-
+184|feel|feel|verb|sentir|sentirse|A1|-
+185|guys|guys|drop|-|-|-|-
+186|father|father|noun|padre|papá|A1|-
+187|guy|guy|noun|tipo|chico;tío|A2|informal word for a man
+188|made|make|verb|hizo|hecho|A1|past tense form
+189|old|old|adj|viejo|antiguo|A1|-
+190|isn|isn|drop|-|-|-|-
+191|which|which|pron|cuál|que|A1|-
+192|big|big|adj|grande|gran|A1|-
+193|lot|lot|noun|montón|mucho|A1|a large amount
+194|done|do|verb|hecho|terminado|A1|past participle
+195|hello|hello|interj|hola|-|A1|-
+196|nice|nice|adj|agradable|simpático;bonito|A1|-
+197|believe|believe|verb|creer|-|A1|-
+198|girl|girl|noun|chica|niña|A1|-
+199|someone|someone|pron|alguien|-|A1|-
+200|fine|fine|adj|bien|estupendo|A1|feeling or doing well
