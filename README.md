@@ -3,7 +3,9 @@
 Juego de vocabulario inglés para Android. Sale una palabra, eliges entre varias
 opciones, y un motor de repetición espaciada decide cuándo vuelve a salir.
 
-Sin red, sin cuentas, sin anuncios. Todo vive en el dispositivo.
+Sin cuentas, sin anuncios, sin tandas: el juego no tiene final. Lo único que
+sale a la red es la descarga del diccionario, y solo cuando se pulsa el botón.
+El progreso nunca abandona el dispositivo.
 
 ## Cómo funciona el motor
 
@@ -59,50 +61,30 @@ que se instala en el móvil sin más trámite.
 
 ## El diccionario
 
-La app trae de serie las palabras más frecuentes del inglés, suficientes para
-empezar. Para ampliarlo:
+6780 palabras, ordenadas por frecuencia real de uso. Se arman cruzando dos
+fuentes con `tools/construir_diccionario.py`:
 
-1. Abre un chat nuevo en ChatGPT y pega `tools/prompt_chatgpt.txt`.
-2. Pégale los lotes de `tools/lotes/` uno a uno. Cada uno son 200 palabras
-   ordenadas por frecuencia real: `lote_000` son las 200 más usadas del inglés.
-3. Guarda cada respuesta en un archivo dentro de `respuestas/`.
-4. Valida y arma el archivo final:
+```bash
+./tools/descargar_fuente.sh          # volcado bilingüe, 5,7 MB, no va en el repo
+python3 tools/construir_diccionario.py
+```
 
-   ```bash
-   python3 tools/validar.py respuestas/*.txt
-   ```
+Escribe `app/src/main/assets/words.txt`. Los lotes revisados a mano en
+`tools/respuestas/` tienen prioridad sobre lo automático.
 
-   Escribe `words.txt` y avisa de líneas rotas, ids que faltan y traducciones
-   ambiguas. Sobre todo comprueba que **cada respuesta corresponda a la palabra
-   que se pidió**: un modelo que pierde el hilo genera "las siguientes palabras
-   frecuentes" de memoria, con el formato perfecto y el contenido ajeno. Si eso
-   pasa, el lote se rechaza entero y no se toca el `words.txt` que ya tenías. Por defecto se queda con **una sola forma por lema**: la lista de
-   frecuencia cuenta formas, no lemas, así que sin ese paso `is`, `was`, `are`,
-   `were`, `been` y `am` entran las seis traducidas por "ser" y el modo
-   español-inglés pasa a tener seis respuestas válidas. Con `--con-flexiones` se
-   conservan todas.
-5. Pasa `words.txt` al móvil e impórtalo desde Ajustes.
+El nivel MCER no sale de ninguna fuente: se deduce del puesto en la lista de
+frecuencia. Es una aproximación, no una medida.
 
-Importar sustituye el diccionario pero **no** borra el progreso: viven en tablas
-distintas y se enlazan por posición en la lista de frecuencia.
+### Actualizar desde la aplicación
 
-Hay 70 lotes, 14000 palabras. Se descarta bastante por el camino: en el primer
-lote, de 200 palabras quedaron 159 tras quitar nombres propios, interjecciones,
-restos de la tokenización de subtítulos (`don`, `didn`, `isn`) y plegar las
-formas flexionadas en su lema. No hace falta hacerlos todos de golpe: con 10
-lotes hay vocabulario para meses.
+El botón de Ajustes descarga `words.txt` del repositorio y lo instala si ha
+cambiado, comparando una huella del contenido para no reinstalar lo mismo. El
+progreso no se toca: vive en otra tabla y se reenlaza por posición en la lista
+de frecuencia.
 
-`tools/respuestas/` guarda los lotes ya revisados, como referencia de lo que
-debe salir.
-
-Valida siempre **todos** los lotes juntos, no de uno en uno: el plegado por lema
-necesita verlos a la vez para saber que `best` pertenece a `good` y que `year`
-gana sobre `years`.
-
-En `tools/excluir.txt` puedes listar palabras que no quieras en el diccionario,
-una por línea. La lista de frecuencia sale de subtítulos y trae malsonantes de
-uso muy real; que entren o no es decisión tuya, no del script. Se compara contra
-la palabra y contra su lema, así que excluir `fuck` aparta también `fucking`.
+**Requiere que el repositorio sea público.** GitHub sirve los archivos en crudo
+de repositorios privados solo con credenciales, y un token dentro del APK está
+publicado de hecho: cualquiera puede extraerlo del archivo instalado.
 
 ### Formato
 
@@ -115,16 +97,15 @@ rank|en|lemma|pos|es|es_alt|cefr|hint
 distractores, así que no es solo un identificador. `hint` desambigua las
 palabras con varios significados y se muestra bajo la pregunta.
 
-Se usa tubería en vez de coma porque las traducciones llevan comas a menudo y
-las comillas de CSV se pierden al copiar y pegar.
-
 ## Origen de las palabras
 
-Lista de frecuencia de OpenSubtitles 2018, de
+Frecuencia: OpenSubtitles 2018, de
 [hermitdave/FrequencyWords](https://github.com/hermitdave/FrequencyWords),
 filtrada a palabras alfabéticas. Refleja inglés hablado, que es lo que interesa
 para aprender, en vez de frecuencia de corpus web.
 
-Las traducciones se generan con un modelo de lenguaje y **no están revisadas una
-a una**. Para uso personal va sobrado; antes de publicar la app habría que
-repasarlas y comprobar la licencia de la lista de origen.
+Traducciones: volcado de Wiktionary EN-ES, **CC BY-SA**. Eso obliga a atribuir y
+a mantener la misma licencia si el diccionario se redistribuye.
+
+Las traducciones **no están revisadas una a una**. Para uso personal va sobrado;
+antes de publicar la app habría que repasarlas.

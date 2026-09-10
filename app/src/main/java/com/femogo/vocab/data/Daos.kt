@@ -32,9 +32,6 @@ interface CardDao {
     @Upsert
     suspend fun upsert(card: CardEntity)
 
-    @Query("SELECT COUNT(*) FROM cards WHERE introducedAt >= :since")
-    suspend fun introducedSince(since: Long): Int
-
     @Query("DELETE FROM cards")
     suspend fun clear()
 }

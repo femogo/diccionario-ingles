@@ -1,26 +1,31 @@
 package com.femogo.vocab.ui
 
 import android.app.Application
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -29,24 +34,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.femogo.vocab.VocabApplication
+import com.femogo.vocab.data.DictionaryUpdater
 import com.femogo.vocab.data.Settings
-import com.femogo.vocab.data.VocabRepository
-import com.femogo.vocab.engine.DirectionMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AjustesViewModel(app: Application) : AndroidViewModel(app) {
     private val store = (app as VocabApplication).settings
     private val repo = (app as VocabApplication).repository
+    private val updater = DictionaryUpdater(app, repo)
 
     val settings: StateFlow<Settings> =
         store.flow.stateIn(viewModelScope, SharingStarted.Eagerly, Settings())
@@ -54,24 +65,43 @@ class AjustesViewModel(app: Application) : AndroidViewModel(app) {
     private val _mensaje = MutableStateFlow<String?>(null)
     val mensaje: StateFlow<String?> = _mensaje.asStateFlow()
 
-    fun setDirection(mode: DirectionMode) = viewModelScope.launch { store.setDirection(mode) }
-    fun setNewPerDay(v: Int) = viewModelScope.launch { store.setNewPerDay(v) }
-    fun setSessionSize(v: Int) = viewModelScope.launch { store.setSessionSize(v) }
+    private val _actualizando = MutableStateFlow(false)
+    val actualizando: StateFlow<Boolean> = _actualizando.asStateFlow()
+
+    private val _palabras = MutableStateFlow(0)
+    val palabras: StateFlow<Int> = _palabras.asStateFlow()
+
+    init { contarPalabras() }
+
     fun setOptionCount(v: Int) = viewModelScope.launch { store.setOptionCount(v) }
 
-    fun importar(uri: Uri) {
-        viewModelScope.launch {
-            val resolver = getApplication<Application>().contentResolver
-            val reporte = runCatching {
-                resolver.openInputStream(uri)?.use { repo.importInto(it) }
-            }.getOrNull()
+    private fun contarPalabras() {
+        viewModelScope.launch { _palabras.value = repo.catalog().size }
+    }
 
-            _mensaje.value = when {
-                reporte == null -> "No se ha podido leer el archivo"
-                reporte.imported == 0 -> "Ninguna línea válida. ¿Es el formato rank|en|lemma|pos|es|es_alt|cefr|hint?"
-                else -> "Importadas ${reporte.imported} palabras" +
-                    if (reporte.skipped > 0) ", ${reporte.skipped} líneas descartadas" else ""
+    /**
+     * Descarga el diccionario del repositorio y lo instala si ha cambiado.
+     * [alTerminar] avisa a la pantalla de juego para que deje de preguntar por
+     * el catálogo viejo.
+     */
+    fun actualizarDiccionario(alTerminar: () -> Unit) {
+        if (_actualizando.value) return
+        viewModelScope.launch {
+            _actualizando.value = true
+            val huella = store.flow.first().dictionaryHash
+            val (resultado, nueva) = updater.actualizar(huella)
+            _mensaje.value = when (resultado) {
+                is DictionaryUpdater.Resultado.AlDia -> "Ya tienes la última versión"
+                is DictionaryUpdater.Resultado.Instalado -> {
+                    nueva?.let { store.setDictionaryHash(it) }
+                    contarPalabras()
+                    alTerminar()
+                    "Instaladas ${resultado.palabras} palabras" +
+                        if (resultado.descartadas > 0) ", ${resultado.descartadas} líneas descartadas" else ""
+                }
+                is DictionaryUpdater.Resultado.Fallo -> resultado.motivo
             }
+            _actualizando.value = false
         }
     }
 
@@ -86,95 +116,97 @@ class AjustesViewModel(app: Application) : AndroidViewModel(app) {
 }
 
 @Composable
-fun AjustesScreen(vm: AjustesViewModel, modifier: Modifier = Modifier) {
+fun AjustesScreen(
+    vm: AjustesViewModel,
+    onDiccionarioActualizado: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val settings by vm.settings.collectAsState()
     val mensaje by vm.mensaje.collectAsState()
+    val actualizando by vm.actualizando.collectAsState()
+    val palabras by vm.palabras.collectAsState()
     var confirmarReinicio by remember { mutableStateOf(false) }
 
-    val abrirArchivo = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri -> uri?.let(vm::importar) }
+    BoxWithConstraints(modifier.fillMaxSize()) {
+        val amplio = maxWidth >= 600.dp
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = if (amplio) 32.dp else 20.dp, vertical = 20.dp)
+                .widthIn(max = 720.dp)
+                .align(Alignment.TopCenter)
+        ) {
+            Text("Ajustes", style = MaterialTheme.typography.headlineSmall)
+            Spacer(Modifier.height(28.dp))
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp)
-    ) {
-        Text("Ajustes", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(24.dp))
+            Text("Opciones por pregunta", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Cuantas más opciones, menos se acierta por eliminación.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(14.dp))
+            SelectorNumero(
+                valores = (2..6).toList(),
+                seleccionado = settings.optionCount,
+                onSelect = vm::setOptionCount
+            )
 
-        Text("Cómo se pregunta", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ModoChip("Mixto", DirectionMode.PROGRESSIVE, settings.directionMode, vm::setDirection)
-            ModoChip("EN→ES", DirectionMode.EN_TO_ES, settings.directionMode, vm::setDirection)
-            ModoChip("ES→EN", DirectionMode.ES_TO_EN, settings.directionMode, vm::setDirection)
+            Spacer(Modifier.height(36.dp))
+            Text("Diccionario", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "$palabras palabras instaladas. Al actualizar se descarga la última " +
+                    "versión del repositorio. Tu progreso no se toca.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(14.dp))
+            Button(
+                onClick = { vm.actualizarDiccionario(onDiccionarioActualizado) },
+                enabled = !actualizando,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 60.dp),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                if (actualizando) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(Modifier.size(12.dp))
+                    Text("Buscando novedades…", fontWeight = FontWeight.SemiBold)
+                } else {
+                    Text("Actualizar diccionario", fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                }
+            }
+
+            Spacer(Modifier.height(36.dp))
+            OutlinedButton(
+                onClick = { confirmarReinicio = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) { Text("Borrar mi progreso") }
+
+            Spacer(Modifier.height(32.dp))
         }
-        Spacer(Modifier.height(6.dp))
-        Text(
-            "En modo mixto las palabras nuevas se preguntan de inglés a español, " +
-                "y al asentarse pasan a preguntarse al revés, que cuesta más.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(Modifier.height(24.dp))
-        Ajuste(
-            titulo = "Palabras nuevas al día",
-            valor = settings.newPerDay,
-            rango = 0f..60f,
-            pasos = 11,
-            onChange = vm::setNewPerDay
-        )
-        Ajuste(
-            titulo = "Preguntas por sesión",
-            valor = settings.sessionSize,
-            rango = 5f..60f,
-            pasos = 10,
-            onChange = vm::setSessionSize
-        )
-        Ajuste(
-            titulo = "Opciones por pregunta",
-            valor = settings.optionCount,
-            rango = 2f..6f,
-            pasos = 3,
-            onChange = vm::setOptionCount
-        )
-
-        Spacer(Modifier.height(24.dp))
-        HorizontalDivider()
-        Spacer(Modifier.height(24.dp))
-
-        Text("Diccionario", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "Importa un archivo de texto con una palabra por línea en el formato " +
-                "rank|en|lemma|pos|es|es_alt|cefr|hint. Sustituye el diccionario " +
-                "actual pero no borra lo que ya has aprendido.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(Modifier.height(12.dp))
-        Button(
-            onClick = { abrirArchivo.launch("*/*") },
-            modifier = Modifier.fillMaxWidth()
-        ) { Text("Importar diccionario") }
-
-        Spacer(Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = { confirmarReinicio = true },
-            modifier = Modifier.fillMaxWidth()
-        ) { Text("Borrar mi progreso") }
-
-        Spacer(Modifier.height(32.dp))
     }
 
     mensaje?.let {
         AlertDialog(
             onDismissRequest = vm::limpiarMensaje,
             confirmButton = { TextButton(onClick = vm::limpiarMensaje) { Text("Vale") } },
-            text = { Text(it) }
+            text = { Text(it) },
+            shape = RoundedCornerShape(24.dp)
         )
     }
 
@@ -183,6 +215,7 @@ fun AjustesScreen(vm: AjustesViewModel, modifier: Modifier = Modifier) {
             onDismissRequest = { confirmarReinicio = false },
             title = { Text("¿Borrar el progreso?") },
             text = { Text("Se pierden las cajas y las estadísticas de todas las palabras. No se puede deshacer.") },
+            shape = RoundedCornerShape(24.dp),
             confirmButton = {
                 TextButton(onClick = {
                     confirmarReinicio = false
@@ -196,42 +229,43 @@ fun AjustesScreen(vm: AjustesViewModel, modifier: Modifier = Modifier) {
     }
 }
 
+/** Fila de pastillas para elegir un número. Más directo que un deslizador. */
 @Composable
-private fun ModoChip(
-    etiqueta: String,
-    modo: DirectionMode,
-    actual: DirectionMode,
-    onSelect: (DirectionMode) -> Unit
+private fun SelectorNumero(
+    valores: List<Int>,
+    seleccionado: Int,
+    onSelect: (Int) -> Unit
 ) {
-    FilterChip(
-        selected = modo == actual,
-        onClick = { onSelect(modo) },
-        label = { Text(etiqueta) }
-    )
-}
-
-@Composable
-private fun Ajuste(
-    titulo: String,
-    valor: Int,
-    rango: ClosedFloatingPointRange<Float>,
-    pasos: Int,
-    onChange: (Int) -> Unit
-) {
-    Column(Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(titulo, style = MaterialTheme.typography.bodyLarge)
-            Text("$valor", style = MaterialTheme.typography.bodyLarge)
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        valores.forEach { valor ->
+            val activo = valor == seleccionado
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 56.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(
+                        if (activo) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.surface
+                    )
+                    .border(
+                        width = if (activo) 0.dp else 1.dp,
+                        color = if (activo) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(18.dp)
+                    )
+                    .clickable { onSelect(valor) },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "$valor",
+                    fontSize = 19.sp,
+                    fontWeight = if (activo) FontWeight.Bold else FontWeight.Normal,
+                    color = if (activo) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
-        Slider(
-            value = valor.toFloat().coerceIn(rango),
-            onValueChange = { onChange(it.toInt()) },
-            valueRange = rango,
-            steps = pasos
-        )
-        Spacer(Modifier.height(8.dp))
     }
 }

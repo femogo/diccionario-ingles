@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -77,11 +79,15 @@ class ProgresoViewModel(app: Application) : AndroidViewModel(app) {
 
 @Composable
 fun ProgresoScreen(state: ProgresoUiState, modifier: Modifier = Modifier) {
+    BoxWithConstraints(modifier.fillMaxSize()) {
+    val amplio = maxWidth >= 600.dp
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(20.dp)
+            .padding(horizontal = if (amplio) 32.dp else 20.dp, vertical = 20.dp)
+            .widthIn(max = 720.dp)
+            .align(Alignment.TopCenter)
     ) {
         Text("Progreso", style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(20.dp))
@@ -107,7 +113,7 @@ fun ProgresoScreen(state: ProgresoUiState, modifier: Modifier = Modifier) {
         )
         Spacer(Modifier.height(12.dp))
 
-        val maximo = (state.porCaja.maxOrNull() ?: 0).coerceAtLeast(1)
+            val maximo = (state.porCaja.maxOrNull() ?: 0).coerceAtLeast(1)
         state.porCaja.forEachIndexed { i, cantidad ->
             Barra(etiqueta = "Caja ${i + 1}", valor = cantidad, maximo = maximo)
             Spacer(Modifier.height(8.dp))
@@ -119,6 +125,8 @@ fun ProgresoScreen(state: ProgresoUiState, modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        Spacer(Modifier.height(24.dp))
+    }
     }
 }
 

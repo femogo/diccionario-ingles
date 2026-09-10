@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Sin permiso de red: todo el vocabulario y el progreso viven en el dispositivo. -->
+    <!-- Solo para traerse el diccionario actualizado. El progreso nunca sale del dispositivo. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".VocabApplication"

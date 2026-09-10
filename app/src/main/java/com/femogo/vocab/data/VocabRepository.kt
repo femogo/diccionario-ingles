@@ -7,7 +7,6 @@ import com.femogo.vocab.engine.WordParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStream
-import java.util.Calendar
 
 /**
  * Puente entre la base de datos y el motor.
@@ -44,11 +43,6 @@ class VocabRepository(private val context: Context) {
         db.cardDao().upsert(CardEntity.from(card, existing?.introducedAt ?: now))
     }
 
-    /** Cuántas palabras nuevas se han empezado hoy, para respetar el tope diario. */
-    suspend fun introducedToday(now: Long): Int = withContext(Dispatchers.IO) {
-        db.cardDao().introducedSince(startOfDay(now))
-    }
-
     /**
      * Sustituye el diccionario entero. El progreso no se toca: está en otra
      * tabla y se vuelve a enlazar por rank, así que ampliar el vocabulario no
@@ -72,13 +66,5 @@ class VocabRepository(private val context: Context) {
 
     companion object {
         const val SEED_ASSET = "words.txt"
-
-        fun startOfDay(now: Long): Long = Calendar.getInstance().apply {
-            timeInMillis = now
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
     }
 }

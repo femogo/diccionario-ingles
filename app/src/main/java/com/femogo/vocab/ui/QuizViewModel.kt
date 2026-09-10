@@ -22,17 +22,19 @@ data class QuizUiState(
     val question: Question? = null,
     /** Índice pulsado, o null si la pregunta sigue abierta. */
     val chosenIndex: Int? = null,
-    val position: Int = 0,
-    val total: Int = 0,
-    val correctSoFar: Int = 0,
-    val finished: Boolean = false,
-    val catalogSize: Int = 0,
-    val dueCount: Int = 0
+    val respondidas: Int = 0,
+    val aciertos: Int = 0,
+    val sinDiccionario: Boolean = false
 ) {
     val answered: Boolean get() = chosenIndex != null
     val wasCorrect: Boolean get() = chosenIndex != null && chosenIndex == question?.correctIndex
+    val racha: Int get() = aciertos
 }
 
+/**
+ * El juego no tiene tandas: la cola se rellena sola antes de agotarse, así que
+ * nunca aparece una pantalla de "sesión terminada" ni un final al que llegar.
+ */
 class QuizViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = (app as VocabApplication).repository
@@ -40,93 +42,108 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
 
     private val leitner = Leitner()
     private val quizBuilder = QuizBuilder()
+    private val scheduler = Scheduler(leitner)
 
     private val _state = MutableStateFlow(QuizUiState())
     val state: StateFlow<QuizUiState> = _state.asStateFlow()
 
     private var catalog: List<Word> = emptyList()
-    private var cards: MutableMap<Int, Card> = mutableMapOf()
-    private var queue: List<Word> = emptyList()
-    private var index = 0
+    private val cards = mutableMapOf<Int, Card>()
+    private var cola = ArrayDeque<Word>()
     private var optionCount = 4
-    private var directionMode = DirectionMode.PROGRESSIVE
 
-    init { startSession() }
+    init { arrancar() }
 
-    fun startSession() {
+    fun arrancar() {
         viewModelScope.launch {
             _state.value = QuizUiState(loading = true)
-
             repo.ensureSeeded()
             catalog = repo.catalog()
-            cards = repo.cards().toMutableMap()
+            cards.clear()
+            cards.putAll(repo.cards())
+            optionCount = settingsStore.flow.first().optionCount
 
-            val settings = settingsStore.flow.first()
-            optionCount = settings.optionCount
-            directionMode = settings.directionMode
-            val now = System.currentTimeMillis()
-            val scheduler = Scheduler(leitner, newPerDay = settings.newPerDay)
-
-            queue = scheduler.buildSession(
-                catalog = catalog,
-                cards = cards,
-                now = now,
-                size = settings.sessionSize,
-                newIntroducedToday = repo.introducedToday(now)
-            )
-            index = 0
-
-            _state.value = QuizUiState(
-                loading = false,
-                total = queue.size,
-                catalogSize = catalog.size,
-                dueCount = scheduler.dueCount(cards, now)
-            )
-            showCurrent()
+            if (catalog.isEmpty()) {
+                _state.value = QuizUiState(loading = false, sinDiccionario = true)
+                return@launch
+            }
+            cola.clear()
+            rellenar()
+            _state.value = QuizUiState(loading = false)
+            mostrarSiguiente()
         }
     }
 
-    private fun showCurrent() {
-        val word = queue.getOrNull(index)
+    /** Se llama al recargar el diccionario, para no seguir preguntando lo viejo. */
+    fun recargarCatalogo() {
+        viewModelScope.launch {
+            catalog = repo.catalog()
+            cola.clear()
+            if (catalog.isNotEmpty()) {
+                rellenar()
+                _state.value = _state.value.copy(sinDiccionario = false)
+                mostrarSiguiente()
+            }
+        }
+    }
+
+    private fun rellenar() {
+        val pendientes = cola.map { it.rank }.toSet()
+        scheduler.buildQueue(catalog, cards, System.currentTimeMillis(), size = TAMAÑO_COLA)
+            .filter { it.rank !in pendientes }
+            .forEach { cola.addLast(it) }
+    }
+
+    private fun mostrarSiguiente() {
+        if (cola.size <= RELLENAR_BAJO) rellenar()
+        val word = cola.removeFirstOrNull()
         if (word == null) {
-            _state.value = _state.value.copy(question = null, chosenIndex = null, finished = index > 0)
+            _state.value = _state.value.copy(question = null, sinDiccionario = catalog.isEmpty())
             return
         }
         val card = cards[word.rank] ?: leitner.newCard(word.rank, System.currentTimeMillis())
         _state.value = _state.value.copy(
             question = quizBuilder.build(
                 target = word,
-                direction = leitner.directionFor(card, directionMode),
+                direction = leitner.directionFor(card, DirectionMode.PROGRESSIVE),
                 pool = catalog,
                 optionCount = optionCount
             ),
-            chosenIndex = null,
-            position = index + 1
+            chosenIndex = null
         )
     }
 
     fun answer(chosen: Int) {
-        val current = _state.value
+        val actual = _state.value
         // Ignorar pulsaciones repetidas: la respuesta ya se contabilizó.
-        if (current.answered || current.question == null) return
+        if (actual.answered || actual.question == null) return
 
-        val question = current.question
-        val correct = chosen == question.correctIndex
-        val now = System.currentTimeMillis()
-        val card = cards[question.word.rank] ?: leitner.newCard(question.word.rank, now)
-        val updated = leitner.answer(card, correct, now)
-        cards[question.word.rank] = updated
+        val question = actual.question
+        val acierto = chosen == question.correctIndex
+        val ahora = System.currentTimeMillis()
+        val card = cards[question.word.rank] ?: leitner.newCard(question.word.rank, ahora)
+        val actualizada = leitner.answer(card, acierto, ahora)
+        cards[question.word.rank] = actualizada
 
-        _state.value = current.copy(
+        _state.value = actual.copy(
             chosenIndex = chosen,
-            correctSoFar = current.correctSoFar + if (correct) 1 else 0
+            respondidas = actual.respondidas + 1,
+            aciertos = actual.aciertos + if (acierto) 1 else 0
         )
-        viewModelScope.launch { repo.save(updated, now) }
+        viewModelScope.launch { repo.save(actualizada, ahora) }
     }
 
     fun next() {
         if (!_state.value.answered) return
-        index++
-        showCurrent()
+        mostrarSiguiente()
+    }
+
+    fun aplicarNumeroDeOpciones(valor: Int) {
+        optionCount = valor
+    }
+
+    private companion object {
+        const val TAMAÑO_COLA = 40
+        const val RELLENAR_BAJO = 8
     }
 }

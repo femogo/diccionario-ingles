@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.femogo.vocab.ui.AjustesScreen
@@ -63,16 +65,22 @@ private fun App(
 ) {
     // Tres pantallas fijas no justifican un grafo de navegación.
     var seccion by remember { mutableStateOf(Seccion.JUGAR) }
+    val ajustes by ajustesVm.settings.collectAsState()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            NavigationBar {
+            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                 Seccion.entries.forEach { destino ->
                     NavigationBarItem(
                         selected = seccion == destino,
                         onClick = { seccion = destino },
                         icon = { Icon(destino.icono, contentDescription = destino.etiqueta) },
-                        label = { Text(destino.etiqueta) }
+                        label = { Text(destino.etiqueta) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                        )
                     )
                 }
             }
@@ -85,17 +93,24 @@ private fun App(
         LaunchedEffect(seccion) {
             if (seccion == Seccion.PROGRESO) progresoVm.refresh()
         }
+        // Cambiar el número de opciones se nota en la siguiente pregunta.
+        LaunchedEffect(ajustes.optionCount) {
+            quizVm.aplicarNumeroDeOpciones(ajustes.optionCount)
+        }
 
         when (seccion) {
             Seccion.JUGAR -> QuizScreen(
                 state = quizState,
                 onAnswer = quizVm::answer,
                 onNext = quizVm::next,
-                onRestart = quizVm::startSession,
                 modifier = Modifier.padding(padding)
             )
             Seccion.PROGRESO -> ProgresoScreen(progresoState, Modifier.padding(padding))
-            Seccion.AJUSTES -> AjustesScreen(ajustesVm, Modifier.padding(padding))
+            Seccion.AJUSTES -> AjustesScreen(
+                vm = ajustesVm,
+                onDiccionarioActualizado = quizVm::recargarCatalogo,
+                modifier = Modifier.padding(padding)
+            )
         }
     }
 }
