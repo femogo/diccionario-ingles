@@ -1,177 +1,25 @@
-# Diccionario semilla: las palabras mas frecuentes del ingles.
-# Formato: rank|en|lemma|pos|es|es_alt|cefr|hint
-# Una forma por lema. Amplialo con tools/prompt_chatgpt.txt e importalo desde Ajustes.
-1|you|you|pron|tú|usted;vosotros;ustedes|A1|-
-2|i|i|pron|yo|-|A1|-
-3|the|the|det|el|la;los;las|A1|-
-4|to|to|prep|a|hacia;para|A1|direction or recipient
-5|a|a|det|un|una|A1|-
-6|it|it|pron|ello|lo;eso|A1|nonhuman subject
-7|and|and|conj|y|e|A1|-
-8|that|that|det|ese|esa;eso|A1|pointing at something
-9|of|of|prep|de|-|A1|belonging or origin
-11|in|in|prep|en|dentro de|A1|inside something
-12|what|what|pron|qué|cuál|A1|asking for information
-13|we|we|pron|nosotros|nosotras|A1|-
-15|this|this|det|este|esta;esto|A1|near the speaker
-16|he|he|pron|él|-|A1|-
-17|for|for|prep|para|por|A1|purpose or recipient
-18|my|my|det|mi|mis|A1|-
-19|on|on|prep|en|sobre|A1|surface or position
-20|have|have|verb|tener|haber|A1|possession or auxiliary
-21|your|your|det|tu|tus;su;sus|A1|-
-22|do|do|verb|hacer|realizar|A1|perform an action
-24|no|no|det|ningún|ninguna|A1|before a noun
-25|not|not|adv|no|-|A1|negation
-26|be|be|verb|ser|estar|A1|-
-29|know|know|verb|saber|conocer|A1|have knowledge
-30|can|can|verb|poder|saber|A1|ability or possibility
-31|with|with|prep|con|-|A1|-
-32|but|but|conj|pero|sino|A1|-
-33|all|all|det|todo|toda;todos;todas|A1|entire amount
-34|so|so|adv|así|tan;entonces|A1|manner or degree
-35|just|just|adv|solo|justo;acabar de|A1|merely
-36|there|there|adv|allí|ahí|A1|place away
-37|here|here|adv|aquí|acá|A1|-
-38|they|they|pron|ellos|ellas|A1|-
-39|like|like|verb|gustar|agradar|A1|enjoy something
-40|get|get|verb|conseguir|obtener;recibir|A1|obtain something
-41|she|she|pron|ella|-|A1|-
-42|go|go|verb|ir|marcharse|A1|-
-43|if|if|conj|si|-|A1|condition
-44|right|right|adj|correcto|adecuado;cierto|A1|not wrong
-45|out|out|adv|fuera|afuera|A1|not inside
-46|about|about|prep|sobre|acerca de|A1|concerning a topic
-47|up|up|adv|arriba|hacia arriba|A1|higher position
-48|at|at|prep|en|a|A1|specific place
-50|now|now|adv|ahora|ya|A1|-
-52|one|one|num|uno|una|A1|-
-53|come|come|verb|venir|llegar|A1|move toward speaker
-54|well|well|adv|bien|-|A1|in a good way
-56|how|how|adv|cómo|-|A1|asking about manner
-58|will|will|verb|ir a|-|A1|future auxiliary
-60|want|want|verb|querer|desear|A1|-
-61|think|think|verb|pensar|creer|A1|use your mind
-62|as|as|conj|como|mientras;cuando|A2|comparison or role
-63|see|see|verb|ver|entender|A1|use your eyes
-65|good|good|adj|bueno|bien|A1|positive quality
-66|who|who|pron|quién|quienes|A1|asking about person
-67|why|why|adv|por qué|-|A1|asking for reason
-68|from|from|prep|de|desde|A1|origin or source
-69|let|let|verb|dejar|permitir|A1|allow something
-70|his|his|det|su|sus|A1|male possessor
-71|yes|yes|interj|sí|-|A1|affirmative response
-72|when|when|adv|cuándo|cuando|A1|asking about time
-74|time|time|noun|tiempo|hora;vez|A1|duration or occasion
-76|okay|okay|interj|vale|bien;de acuerdo|A1|agreement or acceptance
-77|back|back|adv|atrás|de vuelta|A1|returning direction
-78|look|look|verb|mirar|parecer|A1|direct your eyes
-82|where|where|adv|dónde|donde|A1|asking about place
-84|take|take|verb|tomar|llevar;coger|A1|receive or carry
-85|then|then|adv|entonces|luego|A1|at that time
-87|or|or|conj|o|u|A1|-
-89|our|our|det|nuestro|nuestra;nuestros;nuestras|A1|-
-91|tell|tell|verb|decir|contar|A1|give information
-92|really|really|adv|realmente|de verdad;muy|A1|emphasis or truth
-93|man|man|noun|hombre|señor|A1|adult male
-94|some|some|det|algún|alguna;algunos;algunas|A1|unspecified amount
-95|say|say|verb|decir|afirmar|A1|speak words
-99|by|by|prep|por|junto a|A1|agent or means
-100|need|need|verb|necesitar|requerir|A1|-
-101|something|something|pron|algo|-|A1|-
-103|too|too|adv|también|demasiado|A1|also or excessively
-104|more|more|adv|más|-|A1|greater amount
-105|way|way|noun|manera|camino;forma|A1|method or route
-106|down|down|adv|abajo|hacia abajo|A1|lower position
-107|make|make|verb|hacer|fabricar;crear|A1|create or produce
-108|very|very|adv|muy|-|A1|high degree
-109|never|never|adv|nunca|jamás|A1|-
-110|only|only|adv|solo|solamente|A1|nothing else
-112|over|over|prep|sobre|encima de;por|A1|above something
-113|because|because|conj|porque|-|A1|giving a reason
-114|little|little|adj|pequeño|poco|A1|small in size
-115|please|please|interj|por favor|-|A1|polite request
-116|love|love|verb|amar|querer;encantar|A1|strong affection
-117|should|shall|verb|deber|tener que|A1|advice or obligation
-118|mean|mean|verb|significar|querer decir|A1|have a meaning
-120|sorry|sorry|adj|lo siento|perdon;arrepentido|A1|apology or regret
-121|give|give|verb|dar|entregar|A1|-
-122|off|off|adv|apagado|fuera|A1|not operating
-124|thank|thank|verb|agradecer|dar gracias|A1|express gratitude
-125|any|any|det|algún|cualquier;ningún|A1|unspecified quantity
-126|two|two|num|dos|-|A1|-
-127|even|even|adv|incluso|hasta|A1|emphasis on surprise
-128|much|much|adv|mucho|-|A1|large degree
-130|sure|sure|adj|seguro|cierto|A1|certain or confident
-131|thing|thing|noun|cosa|objeto|A1|-
-133|help|help|verb|ayudar|socorrer|A1|-
-134|first|first|adj|primero|primer|A1|before all others
-135|into|into|prep|dentro de|en|A1|movement inward
-136|anything|anything|pron|cualquier cosa|algo;nada|A1|unspecified thing
-137|still|still|adv|todavía|aún|A1|continuing until now
-138|find|find|verb|encontrar|hallar|A1|discover or locate
-139|life|life|noun|vida|-|A1|-
-140|nothing|nothing|pron|nada|-|A1|-
-141|sir|sir|noun|señor|caballero|A1|respectful male address
-142|day|day|noun|día|jornada|A1|-
-143|god|god|noun|dios|deidad|A1|divine being
-144|work|work|verb|trabajar|funcionar|A1|do a job
-145|their|their|det|su|sus|A1|belonging to them
-147|again|again|adv|otra vez|de nuevo|A1|-
-148|maybe|maybe|adv|quizá|quizás;tal vez|A1|-
-149|must|must|verb|deber|tener que|A1|strong obligation
-150|before|before|prep|antes de|delante de|A1|earlier than
-151|other|other|adj|otro|otra;otros|A1|different or additional
-152|wait|wait|verb|esperar|aguardar|A1|remain until something
-153|stop|stop|verb|parar|detener;dejar de|A1|cease an action
-154|call|call|verb|llamar|telefonear|A1|contact or name
-155|after|after|prep|después de|tras|A1|later than
-157|talk|talk|verb|hablar|conversar|A1|-
-158|away|away|adv|lejos|fuera|A1|at a distance
-159|than|than|conj|que|-|A1|used in comparison
-161|home|home|noun|casa|hogar|A1|place you live
-162|night|night|noun|noche|-|A1|-
-163|put|put|verb|poner|colocar|A1|place something
-164|great|great|adj|genial|excelente;grande|A1|very good
-166|last|last|adj|último|pasado|A1|final in order
-168|everything|everything|pron|todo|-|A1|all things
-170|new|new|adj|nuevo|reciente|A1|-
-172|always|always|adv|siempre|-|A1|-
-173|keep|keep|verb|mantener|guardar;seguir|A1|continue or retain
-174|long|long|adj|largo|prolongado|A1|great length
-176|leave|leave|verb|dejar|irse;marcharse|A1|go away or abandon
-178|money|money|noun|dinero|-|A1|-
-179|around|around|adv|alrededor|por ahí|A1|surrounding area
-181|name|name|noun|nombre|-|A1|-
-182|place|place|noun|lugar|sitio|A1|location
-183|ever|ever|adv|alguna vez|jamás|A1|at any time
-184|feel|feel|verb|sentir|sentirse;palpar|A1|experience emotion
-186|father|father|noun|padre|papá|A1|male parent
-187|guy|guy|noun|tipo|chico;hombre|A1|informal man
-189|old|old|adj|viejo|antiguo;mayor|A1|not young
-191|which|which|pron|cuál|qué|A1|choice among options
-192|big|big|adj|grande|enorme|A1|large size
-193|lot|lot|noun|montón|lote;parcela|A1|large amount
-195|hello|hello|interj|hola|-|A1|-
-196|nice|nice|adj|agradable|bonito;amable|A1|positive impression
-197|believe|believe|verb|creer|confiar|A1|accept as true
-198|girl|girl|noun|chica|niña|A1|young female
-199|someone|someone|pron|alguien|-|A1|-
-200|fine|fine|adj|bien|bueno;aceptable|A1|okay or satisfactory
 201|thanks|thanks|noun|gracias|agradecimiento|A1|expression of gratitude
+202|wanted|want|verb|querer|desear|A1|past tense form
 203|kind|kind|noun|tipo|clase;especie|A1|category or type
+204|coming|come|verb|venir|llegar|A1|continuous form
 205|house|house|noun|casa|vivienda|A1|building to live
 206|every|every|det|cada|todos los|A1|-
+207|ok|ok|drop|-|-|-|-
 208|through|through|prep|a través de|por|A2|from side to side
+209|being|be|verb|ser|estar|A1|continuous form
 210|course|course|noun|curso|trayecto|A1|series of lessons
 211|stay|stay|verb|quedarse|permanecer;alojarse|A1|remain in place
+212|left|leave|verb|irse|dejar;marcharse|A1|past tense form
 213|dad|dad|noun|papá|padre|A1|male parent
 214|enough|enough|det|suficiente|bastante|A1|required amount
+215|happened|happen|verb|pasar|suceder;ocurrir|A1|past tense form
+216|came|come|verb|venir|llegar|A1|past tense form
 217|may|may|verb|poder|quizá|A2|possibility modal
 218|mother|mother|noun|madre|mamá|A1|female parent
 219|wrong|wrong|adj|incorrecto|equivocado;mal|A1|not correct
 220|world|world|noun|mundo|-|A1|-
 221|bad|bad|adj|malo|mal|A1|negative quality
+222|might|may|verb|poder|quizá|A2|possibility modal
 223|three|three|num|tres|-|A1|-
 224|today|today|adv|hoy|-|A1|-
 225|listen|listen|verb|escuchar|oír|A1|pay attention to sound
@@ -185,41 +33,57 @@
 233|show|show|verb|mostrar|enseñar|A1|make visible
 234|else|else|adv|más|otro|A2|in addition
 235|kill|kill|verb|matar|asesinar|A2|cause death
+236|talking|talk|verb|hablar|conversar|A1|continuous form
+237|found|find|verb|encontrar|hallar|A1|past tense form
 238|next|next|adj|siguiente|próximo|A1|following in order
+239|getting|get|verb|conseguir|obtener;recibir|A1|continuous form
 240|care|care|verb|importar|cuidar;preocuparse|A1|feel concern
 241|car|car|noun|coche|auto;carro|A1|road vehicle
+242|looking|look|verb|mirar|buscar;parecer|A1|continuous form
 243|son|son|noun|hijo|-|A1|male child
 244|try|try|verb|intentar|probar|A1|make an attempt
 245|woman|woman|noun|mujer|-|A1|adult female
+246|went|go|verb|ir|irse;marcharse|A1|past tense form
 247|hi|hi|interj|hola|-|A1|informal greeting
 248|dead|dead|adj|muerto|fallecido|A1|no longer alive
 249|many|many|det|muchos|muchas|A1|large number
 250|mind|mind|noun|mente|opinión|A2|thoughts and awareness
+251|wasn|wasn|drop|-|-|-|-
 252|friend|friend|noun|amigo|amiga|A1|-
+253|best|good|adj|mejor|óptimo|A1|superlative quality
 254|mom|mom|noun|mamá|madre|A1|female parent
 255|hell|hell|noun|infierno|-|A2|place of punishment
 256|morning|morning|noun|mañana|-|A1|early part of day
+257|trying|try|verb|intentar|probar|A1|continuous form
 258|boy|boy|noun|chico|niño|A1|young male
 259|together|together|adv|juntos|juntas|A1|with each other
 260|yourself|yourself|pron|tú mismo|usted mismo|A1|reflexive singular form
 261|job|job|noun|trabajo|empleo;puesto|A1|paid work
+262|saw|see|verb|ver|observar|A1|past tense form
 263|family|family|noun|familia|-|A1|-
 264|real|real|adj|real|verdadero;auténtico|A1|not imaginary
 265|without|without|prep|sin|-|A1|-
 266|baby|baby|noun|bebé|niño pequeño|A1|very young child
 267|room|room|noun|habitación|cuarto;espacio|A1|part of building
+268|wouldn|wouldn|drop|-|-|-|-
 269|already|already|adv|ya|-|A1|before now
 270|move|move|verb|mover|mudarse;trasladar|A1|change position
 271|most|most|det|mayoría|más|A1|greatest amount
+272|seen|see|verb|ver|observar|A1|past participle
 273|live|live|verb|vivir|residir|A1|be alive somewhere
 274|miss|miss|verb|extrañar|perder;fallar|A1|feel absence
 275|actually|actually|adv|realmente|en realidad|A2|in fact
+276|huh|huh|drop|-|-|-|-
 277|shit|shit|noun|mierda|porquería|B1|vulgar excrement
 278|both|both|det|ambos|los dos;ambas|A1|two together
+279|heard|hear|verb|oír|escuchar|A1|past tense form
 280|once|once|adv|una vez|antes|A1|one time
 281|ready|ready|adj|listo|preparado|A1|prepared for action
 282|head|head|noun|cabeza|jefe|A1|body part
+283|called|call|verb|llamar|telefonear|A1|past tense form
+284|used|use|verb|usar|utilizar|A1|past tense form
 285|idea|idea|noun|idea|concepto|A1|thought or suggestion
+286|knew|know|verb|saber|conocer|A1|past tense form
 287|hold|hold|verb|sostener|agarrar;mantener|A1|keep in hands
 288|happy|happy|adj|feliz|contento;alegre|A1|feeling pleasure
 289|door|door|noun|puerta|-|A1|-
@@ -229,13 +93,17 @@
 293|also|also|adv|también|además|A1|-
 294|pretty|pretty|adv|bastante|muy|A2|moderately high degree
 295|bit|bit|noun|poco|pedazo;trozo|A1|small amount
+296|took|take|verb|tomar|llevar;coger|A1|past tense form
+297|haven|haven|drop|-|-|-|-
 298|yet|yet|adv|todavía|aún;ya|A1|up to now
+299|men|man|noun|hombres|-|A1|adult males
 300|whole|whole|adj|entero|completo|A1|all of something
 301|start|start|verb|empezar|comenzar;iniciar|A1|-
 302|use|use|verb|usar|utilizar;emplear|A1|-
 303|while|while|conj|mientras|aunque|A2|during same time
 304|since|since|prep|desde|desde que|A2|starting time
 305|wife|wife|noun|esposa|mujer|A1|married woman
+306|days|day|noun|días|jornadas|A1|plural time unit
 307|guess|guess|verb|suponer|adivinar|A2|form uncertain opinion
 308|tomorrow|tomorrow|adv|mañana|-|A1|next day
 309|matter|matter|verb|importar|-|A2|be important
@@ -244,19 +112,29 @@
 312|tonight|tonight|adv|esta noche|-|A1|-
 313|everyone|everyone|pron|todos|todo el mundo|A1|all people
 314|run|run|verb|correr|funcionar;dirigir|A1|move quickly on foot
+315|wanna|wanna|drop|-|-|-|-
 316|hard|hard|adj|difícil|duro|A1|not easy
+317|ah|ah|drop|-|-|-|-
 318|alone|alone|adj|solo|solitario|A1|without other people
 319|myself|myself|pron|yo mismo|mí mismo|A1|reflexive first person
 320|school|school|noun|escuela|colegio|A1|place for education
+321|gone|go|verb|irse|ir;marcharse|A1|past participle
+322|um|um|drop|-|-|-|-
 323|end|end|noun|fin|final|A1|last part
+324|saying|say|verb|decir|afirmar|A1|continuous form
 325|phone|phone|noun|teléfono|móvil|A1|communication device
 326|play|play|verb|jugar|tocar;interpretar|A1|take part in game
+327|looks|look|verb|parecer|mirar|A1|third person singular
+328|couldn|couldn|drop|-|-|-|-
 329|fucking|fuck|adj|maldito|jodido|B1|vulgar intensifier
 330|problem|problem|noun|problema|dificultad|A1|-
 331|few|few|det|pocos|pocas|A1|small number
+332|friends|friend|noun|amigos|amigas|A1|plural companions
+333|gotta|gotta|drop|-|-|-|-
 334|ago|ago|adv|hace|-|A1|time before now
 335|open|open|verb|abrir|destapar|A1|make not closed
 336|anyone|anyone|pron|alguien|cualquiera|A1|any person
+337|killed|kill|verb|matar|asesinar|A2|past tense form
 338|hope|hope|verb|esperar|desear|A1|want something possible
 339|face|face|noun|cara|rostro|A1|front of head
 340|until|until|prep|hasta|-|A1|up to a time
@@ -266,6 +144,8 @@
 344|turn|turn|verb|girar|dar la vuelta;convertirse|A1|change direction
 345|business|business|noun|negocio|empresa;asunto|A2|commercial activity
 346|case|case|noun|caso|asunto;estuche|A2|particular situation
+347|wants|want|verb|querer|desear|A1|third person singular
+348|says|say|verb|decir|afirmar|A1|third person singular
 349|true|true|adj|verdadero|cierto|A1|not false
 350|die|die|verb|morir|fallecer|A1|cease to live
 351|heart|heart|noun|corazón|-|A1|body organ
@@ -277,16 +157,20 @@
 357|watch|watch|verb|mirar|ver;vigilar|A1|observe attentively
 358|music|music|noun|música|-|A1|-
 359|hand|hand|noun|mano|-|A1|body part
+360|having|have|verb|tener|haber|A1|continuous form
 361|probably|probably|adv|probablemente|seguramente|A2|likely to happen
 362|beautiful|beautiful|adj|hermoso|bonito;precioso|A1|very attractive
 363|doctor|doctor|noun|médico|doctora|A1|medical professional
 364|sit|sit|verb|sentarse|estar sentado|A1|take a seat
 365|eat|eat|verb|comer|alimentarse|A1|consume food
+366|thinking|think|verb|pensar|creer|A1|continuous form
 367|young|young|adj|joven|-|A1|not old
 368|second|second|adj|segundo|-|A1|after the first
+369|working|work|verb|trabajar|funcionar|A1|continuous form
 370|water|water|noun|agua|-|A1|-
 371|person|person|noun|persona|individuo|A1|human individual
 372|part|part|noun|parte|porción|A1|piece of whole
+373|kids|kid|noun|niños|chicos|A1|informal children
 374|late|late|adj|tarde|retrasado|A1|after expected time
 375|stuff|stuff|noun|cosas|material|A2|unspecified things
 376|exactly|exactly|adv|exactamente|precisamente|A2|with complete accuracy
@@ -299,14 +183,18 @@
 383|everybody|everybody|pron|todos|todo el mundo|A1|all people
 384|kid|kid|noun|niño|chico|A1|informal child
 385|change|change|verb|cambiar|modificar|A1|make different
+386|gave|give|verb|dar|entregar|A1|past tense form
 387|happen|happen|verb|pasar|suceder;ocurrir|A1|take place
 388|damn|damn|adj|maldito|condenado|B1|informal intensifier
 389|five|five|num|cinco|-|A1|-
 390|drink|drink|verb|beber|tomar|A1|consume liquid
 391|far|far|adv|lejos|-|A1|great distance
+392|knows|know|verb|saber|conocer|A1|third person singular
 393|its|its|det|su|sus|A1|nonhuman possessor
 394|whatever|whatever|pron|lo que sea|cualquier cosa|A2|no matter what
 395|eyes|eye|noun|ojos|-|A1|plural body part
 396|shut|shut|verb|cerrar|callar|A1|make closed
+397|aren|aren|drop|-|-|-|-
 398|hit|hit|verb|golpear|pegar|A1|strike something
+399|taking|take|verb|tomar|llevar;coger|A1|continuous form
 400|easy|easy|adj|fácil|sencillo|A1|not difficult

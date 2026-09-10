@@ -14,7 +14,11 @@ origen cuenta formas, no lemas, asi que sin este paso "is", "was", "are",
 espanol-ingles la pregunta pasa a tener seis respuestas validas y el juego deja
 de medir nada. Con --con-flexiones se conservan todas.
 """
-import sys, re, collections, pathlib
+import sys, re, collections, pathlib, signal
+
+# Sin esto, canalizar la salida a `head` revienta con BrokenPipeError.
+if hasattr(signal, "SIGPIPE"):
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 POS = {"noun","verb","adj","adv","pron","prep","conj","det","num","interj","phrasal","drop"}
 CEFR = {"A1","A2","B1","B2","C1","C2"}
@@ -22,6 +26,18 @@ NOISE = re.compile(r"^\s*(```|LISTO|aqu[ií]|here|nota|note|lote)", re.I)
 
 argumentos = [a for a in sys.argv[1:] if not a.startswith("--")]
 dedup = "--con-flexiones" not in sys.argv
+
+# Lista opcional de palabras a excluir, una por linea. La lista de frecuencia
+# viene de subtitulos, asi que trae malsonantes de uso muy real; que entren o no
+# es decision de quien monta el diccionario, no del script.
+EXCLUIR = pathlib.Path(__file__).with_name("excluir.txt")
+excluidas = set()
+if EXCLUIR.exists():
+    excluidas = {
+        l.strip().lower()
+        for l in EXCLUIR.read_text(encoding="utf-8").splitlines()
+        if l.strip() and not l.startswith("#")
+    }
 
 filas, errores = {}, []
 
@@ -58,6 +74,10 @@ for ruta in argumentos:
 utiles = [f for f in filas.values() if f[3] != "drop"]
 descartadas = len(filas) - len(utiles)
 
+antes = len(utiles)
+utiles = [f for f in utiles if f[1] not in excluidas and f[2] not in excluidas]
+apartadas = antes - len(utiles)
+
 def preferida(a, b):
     """Entre dos formas del mismo lema gana la que ya es forma de diccionario."""
     for f in (a, b):
@@ -89,6 +109,8 @@ print(f"utilizables  {len(utiles)}")
 print(f"descartadas  {descartadas} (pos=drop)")
 if dedup:
     print(f"flexiones    {flexiones} plegadas en su lema")
+if apartadas:
+    print(f"excluidas    {apartadas} por excluir.txt")
 print(f"errores      {len(errores)}")
 for e in errores[:40]:
     print("   ", e)

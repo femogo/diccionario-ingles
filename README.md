@@ -89,8 +89,17 @@ restos de la tokenización de subtítulos (`don`, `didn`, `isn`) y plegar las
 formas flexionadas en su lema. No hace falta hacerlos todos de golpe: con 10
 lotes hay vocabulario para meses.
 
-`tools/respuestas/lote_000.txt` es la respuesta ya revisada del primer lote,
-como referencia de lo que debe salir.
+`tools/respuestas/` guarda los lotes ya revisados, como referencia de lo que
+debe salir.
+
+Valida siempre **todos** los lotes juntos, no de uno en uno: el plegado por lema
+necesita verlos a la vez para saber que `best` pertenece a `good` y que `year`
+gana sobre `years`.
+
+En `tools/excluir.txt` puedes listar palabras que no quieras en el diccionario,
+una por línea. La lista de frecuencia sale de subtítulos y trae malsonantes de
+uso muy real; que entren o no es decisión tuya, no del script. Se compara contra
+la palabra y contra su lema, así que excluir `fuck` aparta también `fucking`.
 
 ### Formato
 

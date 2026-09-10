@@ -1,0 +1,8 @@
+# Palabras que no quieres en el diccionario, una por linea.
+# Se compara contra la palabra y contra su lema, asi que poner "fuck" tambien
+# aparta "fucking". Descomenta las que no quieras ver en el juego.
+#
+# fuck
+# shit
+# damn
+# hell
