@@ -59,8 +59,8 @@ que se instala en el móvil sin más trámite.
 
 ## El diccionario
 
-La app trae de serie las 200 palabras más frecuentes del inglés, suficientes
-para empezar. Para ampliarlo:
+La app trae de serie las palabras más frecuentes del inglés, suficientes para
+empezar. Para ampliarlo:
 
 1. Abre un chat nuevo en ChatGPT y pega `tools/prompt_chatgpt.txt`.
 2. Pégale los lotes de `tools/lotes/` uno a uno. Cada uno son 200 palabras
@@ -73,15 +73,24 @@ para empezar. Para ampliarlo:
    ```
 
    Escribe `words.txt` y avisa de líneas rotas, ids que faltan y traducciones
-   ambiguas.
+   ambiguas. Por defecto se queda con **una sola forma por lema**: la lista de
+   frecuencia cuenta formas, no lemas, así que sin ese paso `is`, `was`, `are`,
+   `were`, `been` y `am` entran las seis traducidas por "ser" y el modo
+   español-inglés pasa a tener seis respuestas válidas. Con `--con-flexiones` se
+   conservan todas.
 5. Pasa `words.txt` al móvil e impórtalo desde Ajustes.
 
 Importar sustituye el diccionario pero **no** borra el progreso: viven en tablas
 distintas y se enlazan por posición en la lista de frecuencia.
 
-Hay 70 lotes, 14000 palabras. Se descarta unes 25% por el camino (nombres
-propios, siglas, onomatopeyas), así que quedan unas 10000 utilizables. No hace
-falta hacerlos todos de golpe: con 10 lotes hay vocabulario para meses.
+Hay 70 lotes, 14000 palabras. Se descarta bastante por el camino: en el primer
+lote, de 200 palabras quedaron 159 tras quitar nombres propios, interjecciones,
+restos de la tokenización de subtítulos (`don`, `didn`, `isn`) y plegar las
+formas flexionadas en su lema. No hace falta hacerlos todos de golpe: con 10
+lotes hay vocabulario para meses.
+
+`tools/respuestas/lote_000.txt` es la respuesta ya revisada del primer lote,
+como referencia de lo que debe salir.
 
 ### Formato
 

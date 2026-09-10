@@ -3,9 +3,16 @@
 
 Uso:
     python3 tools/validar.py respuestas/*.txt
+    python3 tools/validar.py --con-flexiones respuestas/*.txt
 
 Comprueba formato, ids y categorias, avisa de traducciones ambiguas, y escribe
 words.txt en el mismo formato que espera la pantalla de Ajustes de la app.
+
+Por defecto se queda con una sola forma por lema. La lista de frecuencia de
+origen cuenta formas, no lemas, asi que sin este paso "is", "was", "are",
+"were", "been" y "am" entran las seis traducidas por "ser": en el modo
+espanol-ingles la pregunta pasa a tener seis respuestas validas y el juego deja
+de medir nada. Con --con-flexiones se conservan todas.
 """
 import sys, re, collections, pathlib
 
@@ -13,9 +20,12 @@ POS = {"noun","verb","adj","adv","pron","prep","conj","det","num","interj","phra
 CEFR = {"A1","A2","B1","B2","C1","C2"}
 NOISE = re.compile(r"^\s*(```|LISTO|aqu[ií]|here|nota|note|lote)", re.I)
 
+argumentos = [a for a in sys.argv[1:] if not a.startswith("--")]
+dedup = "--con-flexiones" not in sys.argv
+
 filas, errores = {}, []
 
-for ruta in sys.argv[1:]:
+for ruta in argumentos:
     for n, linea in enumerate(pathlib.Path(ruta).read_text(encoding="utf-8").splitlines(), 1):
         linea = linea.strip()
         if not linea or NOISE.match(linea):
@@ -48,6 +58,22 @@ for ruta in sys.argv[1:]:
 utiles = [f for f in filas.values() if f[3] != "drop"]
 descartadas = len(filas) - len(utiles)
 
+def preferida(a, b):
+    """Entre dos formas del mismo lema gana la que ya es forma de diccionario."""
+    for f in (a, b):
+        if f[1] == f[2]:
+            return f
+    return a if a[0] < b[0] else b
+
+flexiones = 0
+if dedup:
+    por_lema = {}
+    for f in utiles:
+        clave = (f[2], f[3])
+        por_lema[clave] = preferida(por_lema[clave], f) if clave in por_lema else f
+    flexiones = len(utiles) - len(por_lema)
+    utiles = list(por_lema.values())
+
 # lemas duplicados: mismas dos palabras compitiendo por la misma entrada
 por_lema = collections.Counter(f[2] for f in utiles)
 dup_lema = [l for l, c in por_lema.items() if c > 1]
@@ -61,6 +87,8 @@ colisiones = [(k, v) for k, v in por_es.items() if len(v) > 1 and any(x[7] == "-
 print(f"leidas       {len(filas)}")
 print(f"utilizables  {len(utiles)}")
 print(f"descartadas  {descartadas} (pos=drop)")
+if dedup:
+    print(f"flexiones    {flexiones} plegadas en su lema")
 print(f"errores      {len(errores)}")
 for e in errores[:40]:
     print("   ", e)
@@ -68,7 +96,7 @@ if len(errores) > 40:
     print(f"    ... y {len(errores)-40} mas")
 
 if dup_lema:
-    print(f"\navisos: {len(dup_lema)} lemas repetidos (formas flexionadas), p.ej. {dup_lema[:8]}")
+    print(f"\navisos: {len(dup_lema)} lemas repetidos, p.ej. {dup_lema[:8]}")
 if colisiones:
     print(f"avisos: {len(colisiones)} traducciones ambiguas sin hint, p.ej.:")
     for (es, pos), v in colisiones[:8]:

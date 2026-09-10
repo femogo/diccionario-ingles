@@ -42,7 +42,12 @@ DEFINICIÓN DE CADA CAMPO
    - nombres propios: personas, ciudades, países, marcas (john, tokyo, google, norway)
    - transliteraciones o palabras de otro idioma (ryo, hwa, liang, señor)
    - abreviaturas y siglas (mr, dr, tv, usa, ok)
-   - onomatopeyas y ruidos (huh, ahh, hmm, whoa)
+   - onomatopeyas, ruidos e interjecciones de conversación:
+     huh, ahh, hmm, whoa, oh, uh, eh, ah, yeah, yep, nope, hey, wow, ouch, gee
+     Esta regla es estricta. "oh", "yeah", "uh" y "hey" son drop aunque se te
+     ocurra una traducción posible. No son vocabulario.
+   - contracciones y formas de habla que no aparecen en un diccionario:
+     gonna, wanna, gotta, kinda, gimme, lemme, ain
    - errores de transcripción o fragmentos que no son palabras inglesas reales
    Cuando pongas "drop", rellena los campos 5, 6, 7 y 8 con un guion: -
    Ejemplo: 4312|tokyo|tokyo|drop|-|-|-|-
@@ -59,6 +64,17 @@ DEFINICIÓN DE CADA CAMPO
    - Máximo 3 palabras. Prefiere 1 palabra siempre que sea posible.
    - Sin paréntesis, sin barras, sin explicaciones dentro del campo.
    - Traduce el sentido del campo "en", no el del "lemma".
+
+   CASO ESPECIAL: verbos auxiliares y modales.
+   Los auxiliares no tienen equivalente de palabra en español, porque en español
+   esa información va en la terminación del verbo. Traduce su FUNCIÓN, no busques
+   un sinónimo:
+     will  -> ir a          (NO "querer")
+     would -> ir a          (NO "querer")
+     shall -> ir a
+     do / does / did como auxiliar de pregunta o negación -> hacer
+   Comprueba siempre que el campo "es" y el campo "hint" cuenten lo mismo. Si el
+   hint dice "future auxiliary" y la traducción dice "querer", está mal.
 
 6) es_alt
    Hasta 3 traducciones alternativas válidas, separadas por punto y coma ;
