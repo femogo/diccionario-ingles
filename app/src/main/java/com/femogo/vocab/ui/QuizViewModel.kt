@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.femogo.vocab.VocabApplication
 import com.femogo.vocab.engine.Card
+import com.femogo.vocab.engine.DirectionMode
 import com.femogo.vocab.engine.Leitner
 import com.femogo.vocab.engine.Question
 import com.femogo.vocab.engine.QuizBuilder
@@ -30,7 +31,6 @@ data class QuizUiState(
 ) {
     val answered: Boolean get() = chosenIndex != null
     val wasCorrect: Boolean get() = chosenIndex != null && chosenIndex == question?.correctIndex
-    val empty: Boolean get() = !loading && question == null && !finished
 }
 
 class QuizViewModel(app: Application) : AndroidViewModel(app) {
@@ -49,6 +49,7 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     private var queue: List<Word> = emptyList()
     private var index = 0
     private var optionCount = 4
+    private var directionMode = DirectionMode.PROGRESSIVE
 
     init { startSession() }
 
@@ -62,6 +63,7 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
 
             val settings = settingsStore.flow.first()
             optionCount = settings.optionCount
+            directionMode = settings.directionMode
             val now = System.currentTimeMillis()
             val scheduler = Scheduler(leitner, newPerDay = settings.newPerDay)
 
@@ -91,19 +93,16 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
             return
         }
         val card = cards[word.rank] ?: leitner.newCard(word.rank, System.currentTimeMillis())
-        viewModelScope.launch {
-            val mode = settingsStore.flow.first().directionMode
-            _state.value = _state.value.copy(
-                question = quizBuilder.build(
-                    target = word,
-                    direction = leitner.directionFor(card, mode),
-                    pool = catalog,
-                    optionCount = optionCount
-                ),
-                chosenIndex = null,
-                position = index + 1
-            )
-        }
+        _state.value = _state.value.copy(
+            question = quizBuilder.build(
+                target = word,
+                direction = leitner.directionFor(card, directionMode),
+                pool = catalog,
+                optionCount = optionCount
+            ),
+            chosenIndex = null,
+            position = index + 1
+        )
     }
 
     fun answer(chosen: Int) {

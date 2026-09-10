@@ -38,7 +38,9 @@ class VocabRepository(private val context: Context) {
     }
 
     suspend fun save(card: Card, now: Long) = withContext(Dispatchers.IO) {
-        val existing = db.cardDao().all().firstOrNull { it.rank == card.rank }
+        // introducedAt se fija en la primera respuesta y no se vuelve a tocar:
+        // es lo que sostiene el tope diario de palabras nuevas.
+        val existing = db.cardDao().byRank(card.rank)
         db.cardDao().upsert(CardEntity.from(card, existing?.introducedAt ?: now))
     }
 

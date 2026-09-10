@@ -31,17 +31,21 @@ class SettingsStore(private val context: Context) {
         )
     }
 
-    suspend fun setDirection(mode: DirectionMode) =
-        context.dataStore.edit { it[KEY_DIRECTION] = mode.name }.let { }
+    suspend fun setDirection(mode: DirectionMode) {
+        context.dataStore.edit { it[KEY_DIRECTION] = mode.name }
+    }
 
-    suspend fun setNewPerDay(value: Int) =
-        context.dataStore.edit { it[KEY_NEW_PER_DAY] = value.coerceIn(0, 200) }.let { }
+    suspend fun setNewPerDay(value: Int) {
+        context.dataStore.edit { it[KEY_NEW_PER_DAY] = value.coerceIn(0, 200) }
+    }
 
-    suspend fun setSessionSize(value: Int) =
-        context.dataStore.edit { it[KEY_SESSION_SIZE] = value.coerceIn(5, 100) }.let { }
+    suspend fun setSessionSize(value: Int) {
+        context.dataStore.edit { it[KEY_SESSION_SIZE] = value.coerceIn(5, 100) }
+    }
 
-    suspend fun setOptionCount(value: Int) =
-        context.dataStore.edit { it[KEY_OPTIONS] = value.coerceIn(2, 6) }.let { }
+    suspend fun setOptionCount(value: Int) {
+        context.dataStore.edit { it[KEY_OPTIONS] = value.coerceIn(2, 6) }
+    }
 
     private companion object {
         val KEY_DIRECTION = stringPreferencesKey("direction")

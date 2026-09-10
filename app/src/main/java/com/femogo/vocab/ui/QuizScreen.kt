@@ -43,12 +43,13 @@ fun QuizScreen(
     onRestart: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val question = state.question
     Box(modifier.fillMaxSize()) {
         when {
             state.loading -> Centrado { CircularProgressIndicator() }
             state.finished -> ResumenSesion(state, onRestart)
-            state.empty -> SinNadaQueRepasar(state, onRestart)
-            state.question != null -> Pregunta(state, state.question, onAnswer, onNext)
+            question == null -> SinNadaQueRepasar(state, onRestart)
+            else -> Pregunta(state, question, onAnswer, onNext)
         }
     }
 }

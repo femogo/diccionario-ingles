@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WordDao {
@@ -27,8 +26,8 @@ interface CardDao {
     @Query("SELECT * FROM cards")
     suspend fun all(): List<CardEntity>
 
-    @Query("SELECT * FROM cards")
-    fun observeAll(): Flow<List<CardEntity>>
+    @Query("SELECT * FROM cards WHERE rank = :rank")
+    suspend fun byRank(rank: Int): CardEntity?
 
     @Upsert
     suspend fun upsert(card: CardEntity)
