@@ -36,6 +36,23 @@ no lo hay. Aquí los distractores comparten categoría gramatical con la respues
 correcta, salen de una banda de frecuencia parecida, y nunca son también válidos
 como traducción.
 
+## La barra de nivel
+
+Sobre la pregunta hay una escala del marco europeo, un tramo por nivel, que se
+colorea de rojo a verde según lo asentado que esté cada uno.
+
+No mide con palabras dominadas o sin dominar, sino con el avance dentro de la
+escala de cajas: una palabra en la caja 3 de 6 aporta la mitad. Con el criterio
+de todo o nada, alguien con cientos de palabras a medias vería todo en cero
+durante semanas, que es justo cuando más falta hace ver que se avanza.
+
+Las palabras del diccionario que no se han visto cuentan como cero: el nivel no
+es lo que sabes de lo que has tocado, sino de todo lo que hay. Y no se salta un
+nivel por saber palabras sueltas de los de arriba; hace falta la base.
+
+El nivel es una estimación a partir del reparto por frecuencia, no una
+certificación.
+
 ## Estructura
 
 ```

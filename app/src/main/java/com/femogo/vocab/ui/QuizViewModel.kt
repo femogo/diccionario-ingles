@@ -5,7 +5,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.femogo.vocab.VocabApplication
 import com.femogo.vocab.engine.Card
+import com.femogo.vocab.engine.Cefr
 import com.femogo.vocab.engine.DirectionMode
+import com.femogo.vocab.engine.NivelProgreso
+import com.femogo.vocab.engine.ProgresoNivel
 import com.femogo.vocab.engine.Leitner
 import com.femogo.vocab.engine.Question
 import com.femogo.vocab.engine.QuizBuilder
@@ -24,7 +27,9 @@ data class QuizUiState(
     val chosenIndex: Int? = null,
     val respondidas: Int = 0,
     val aciertos: Int = 0,
-    val sinDiccionario: Boolean = false
+    val sinDiccionario: Boolean = false,
+    val niveles: List<NivelProgreso> = emptyList(),
+    val nivelAlcanzado: Cefr = Cefr.A1
 ) {
     val answered: Boolean get() = chosenIndex != null
     val wasCorrect: Boolean get() = chosenIndex != null && chosenIndex == question?.correctIndex
@@ -43,6 +48,7 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     private val leitner = Leitner()
     private val quizBuilder = QuizBuilder()
     private val scheduler = Scheduler(leitner)
+    private val progresoNivel = ProgresoNivel(leitner)
 
     private val _state = MutableStateFlow(QuizUiState())
     val state: StateFlow<QuizUiState> = _state.asStateFlow()
@@ -70,6 +76,7 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
             cola.clear()
             rellenar()
             _state.value = QuizUiState(loading = false)
+            recalcularNivel()
             mostrarSiguiente()
         }
     }
@@ -82,6 +89,7 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
             if (catalog.isNotEmpty()) {
                 rellenar()
                 _state.value = _state.value.copy(sinDiccionario = false)
+                recalcularNivel()
                 mostrarSiguiente()
             }
         }
@@ -130,12 +138,26 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
             respondidas = actual.respondidas + 1,
             aciertos = actual.aciertos + if (acierto) 1 else 0
         )
+        recalcularNivel()
         viewModelScope.launch { repo.save(actualizada, ahora) }
     }
 
     fun next() {
         if (!_state.value.answered) return
         mostrarSiguiente()
+    }
+
+    /**
+     * Recorrer el catálogo entero en cada respuesta parece caro, pero son unos
+     * miles de sumas: menos de un milisegundo, y a cambio la barra se mueve en
+     * el momento en que se acierta, que es cuando el avance significa algo.
+     */
+    private fun recalcularNivel() {
+        val niveles = progresoNivel.porNivel(catalog, cards)
+        _state.value = _state.value.copy(
+            niveles = niveles,
+            nivelAlcanzado = progresoNivel.nivelAlcanzado(niveles)
+        )
     }
 
     fun aplicarNumeroDeOpciones(valor: Int) {

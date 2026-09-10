@@ -12,15 +12,14 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,11 +35,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.femogo.vocab.engine.NivelProgreso
 import com.femogo.vocab.engine.Question
+import com.femogo.vocab.ui.theme.Acierto
+import com.femogo.vocab.ui.theme.AciertoFondo
 import com.femogo.vocab.ui.theme.EstiloPalabra
-import com.femogo.vocab.ui.theme.coloresRespuesta
+import com.femogo.vocab.ui.theme.Fallo
+import com.femogo.vocab.ui.theme.FalloFondo
+import com.femogo.vocab.ui.theme.colorDeDominio
 
 @Composable
 fun QuizScreen(
@@ -49,18 +54,8 @@ fun QuizScreen(
     onNext: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Un solo punto de corte: por encima de 600dp de ancho hay sitio para dos
-    // columnas de opciones y para una tipografía mayor. Debajo, una columna.
     BoxWithConstraints(modifier.fillMaxSize()) {
-        val ancho = maxWidth
-        val amplio = ancho >= 600.dp
-        val medida = Medidas(
-            palabra = if (amplio) 64.sp else 42.sp,
-            opcion = if (amplio) 22.sp else 18.sp,
-            alturaOpcion = if (amplio) 76.dp else 64.dp,
-            margen = if (amplio) 32.dp else 20.dp,
-            columnas = if (amplio) 2 else 1
-        )
+        val medida = medidasPara(maxWidth, maxHeight)
         val question = state.question
 
         when {
@@ -70,83 +65,149 @@ fun QuizScreen(
             else -> Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = medida.margen, vertical = 12.dp)
-                    .widthIn(max = 760.dp)
-                    .align(Alignment.TopCenter),
+                    .widthIn(max = 900.dp)
+                    .align(Alignment.TopCenter)
+                    .padding(horizontal = medida.margen, vertical = 14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Marcador(state)
-                Spacer(Modifier.height(if (amplio) 56.dp else 32.dp))
-                Enunciado(question, medida)
-                Spacer(Modifier.height(if (amplio) 56.dp else 36.dp))
+                BarraNivel(state.niveles, state.nivelAlcanzado.name, medida)
+
+                // La palabra se queda con todo el alto sobrante en vez de
+                // amontonarse arriba: en una tablet en vertical eso era media
+                // pantalla vacía.
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Enunciado(question, medida)
+                }
+
                 Opciones(state, question, medida, onAnswer)
+
                 if (state.answered) {
-                    Spacer(Modifier.height(20.dp))
-                    Explicacion(question, state.wasCorrect)
-                    Spacer(Modifier.height(20.dp))
+                    Spacer(Modifier.height(16.dp))
+                    Explicacion(question, state.wasCorrect, medida)
+                    Spacer(Modifier.height(14.dp))
                     BotonSiguiente(onNext, medida)
                 }
-                Spacer(Modifier.height(32.dp))
+                Spacer(Modifier.height(8.dp))
             }
         }
     }
 }
 
 private data class Medidas(
-    val palabra: androidx.compose.ui.unit.TextUnit,
-    val opcion: androidx.compose.ui.unit.TextUnit,
+    val palabra: TextUnit,
+    val opcion: TextUnit,
+    val pista: TextUnit,
+    val explicacion: TextUnit,
     val alturaOpcion: Dp,
     val margen: Dp,
     val columnas: Int
 )
 
-@Composable
-private fun Marcador(state: QuizUiState) {
-    val porcentaje = if (state.respondidas == 0) 0
-    else state.aciertos * 100 / state.respondidas
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            "${state.respondidas} respondidas",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        if (state.respondidas > 0) {
-            Text(
-                "$porcentaje % acierto",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+/**
+ * El tamaño sale de la altura disponible, no solo del ancho. Un único punto de
+ * corte por ancho dejaba la tablet en vertical con la mitad de la pantalla en
+ * blanco y la letra de un móvil.
+ */
+private fun medidasPara(ancho: Dp, alto: Dp): Medidas {
+    val columnas = if (ancho >= 600.dp) 2 else 1
+    return when {
+        alto >= 1000.dp -> Medidas(96.sp, 26.sp, 20.sp, 17.sp, 92.dp, 36.dp, columnas)
+        alto >= 800.dp -> Medidas(76.sp, 24.sp, 18.sp, 16.sp, 80.dp, 30.dp, columnas)
+        alto >= 620.dp -> Medidas(56.sp, 20.sp, 16.sp, 14.sp, 68.dp, 22.dp, columnas)
+        else -> Medidas(40.sp, 17.sp, 14.sp, 13.sp, 54.dp, 18.dp, columnas)
     }
 }
 
 /**
- * Sin encabezado que explique qué hay que hacer: la palabra sola y las opciones
- * debajo ya lo dicen, y repetirlo en cada pregunta solo roba espacio.
+ * Escala del marco europeo, un tramo por nivel, coloreada según lo asentado que
+ * esté cada uno: rojo sin tocar, ámbar a medias, verde dominado.
  */
 @Composable
-private fun Enunciado(question: Question, medida: Medidas) {
-    Text(
-        text = question.prompt.uppercase(),
-        style = EstiloPalabra,
-        fontSize = medida.palabra,
-        color = MaterialTheme.colorScheme.onBackground,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth()
-    )
-    question.hint?.let {
-        Spacer(Modifier.height(10.dp))
+private fun BarraNivel(niveles: List<NivelProgreso>, alcanzado: String, medida: Medidas) {
+    if (niveles.isEmpty()) {
+        Spacer(Modifier.height(medida.alturaOpcion))
+        return
+    }
+    Column(Modifier.fillMaxWidth()) {
         Text(
-            text = it,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            text = "NIVEL $alcanzado",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(8.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(if (medida.columnas == 2) 14.dp else 11.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            niveles.forEach { nivel ->
+                val color by animateColorAsState(colorDeDominio(nivel.dominio), label = "tramo")
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(nivel.dominio.coerceIn(0f, 1f))
+                            .fillMaxHeight()
+                            .background(color)
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(5.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            niveles.forEach { nivel ->
+                val esActual = nivel.cefr.name == alcanzado
+                Text(
+                    text = nivel.cefr.name,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    fontSize = 11.sp,
+                    fontWeight = if (esActual) FontWeight.Black else FontWeight.Bold,
+                    color = if (esActual) MaterialTheme.colorScheme.onBackground
+                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun Enunciado(question: Question, medida: Medidas) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = question.prompt.uppercase(),
+            style = EstiloPalabra,
+            fontSize = medida.palabra,
+            lineHeight = medida.palabra,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
+        question.hint?.let {
+            Spacer(Modifier.height(14.dp))
+            Text(
+                text = it,
+                fontSize = medida.pista,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
@@ -157,12 +218,11 @@ private fun Opciones(
     medida: Medidas,
     onAnswer: (Int) -> Unit
 ) {
-    val indexadas = question.options.withIndex().toList()
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        indexadas.chunked(medida.columnas).forEach { fila ->
+        question.options.withIndex().toList().chunked(medida.columnas).forEach { fila ->
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 fila.forEach { (i, texto) ->
                     Opcion(
@@ -199,45 +259,44 @@ private fun Opcion(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colores = coloresRespuesta()
     val esquema = MaterialTheme.colorScheme
-
     val fondo by animateColorAsState(
         when (estado) {
-            EstadoOpcion.CORRECTA -> colores.fondoAcierto
-            EstadoOpcion.ELEGIDA_MAL -> colores.fondoFallo
-            EstadoOpcion.APAGADA -> esquema.surfaceVariant.copy(alpha = 0.4f)
+            EstadoOpcion.CORRECTA -> AciertoFondo
+            EstadoOpcion.ELEGIDA_MAL -> FalloFondo
+            EstadoOpcion.APAGADA -> esquema.surface.copy(alpha = 0.5f)
             EstadoOpcion.NEUTRA -> esquema.surface
         },
         label = "fondo"
     )
     val borde by animateColorAsState(
         when (estado) {
-            EstadoOpcion.CORRECTA -> colores.acierto
-            EstadoOpcion.ELEGIDA_MAL -> colores.fallo
+            EstadoOpcion.CORRECTA -> Acierto
+            EstadoOpcion.ELEGIDA_MAL -> Fallo
             EstadoOpcion.APAGADA -> Color.Transparent
             EstadoOpcion.NEUTRA -> esquema.outline
         },
         label = "borde"
     )
     val escala by animateFloatAsState(
-        if (estado == EstadoOpcion.CORRECTA) 1.02f else 1f,
+        if (estado == EstadoOpcion.CORRECTA) 1.03f else 1f,
         label = "escala"
     )
-    val texto2 = when (estado) {
-        EstadoOpcion.CORRECTA -> colores.acierto
-        EstadoOpcion.ELEGIDA_MAL -> colores.fallo
-        EstadoOpcion.APAGADA -> esquema.onSurfaceVariant.copy(alpha = 0.6f)
+    val color = when (estado) {
+        EstadoOpcion.CORRECTA -> Acierto
+        EstadoOpcion.ELEGIDA_MAL -> Fallo
+        EstadoOpcion.APAGADA -> esquema.onSurfaceVariant.copy(alpha = 0.45f)
         EstadoOpcion.NEUTRA -> esquema.onSurface
     }
+    val forma = RoundedCornerShape(22.dp)
 
     Box(
         modifier = modifier
             .scale(escala)
             .heightIn(min = medida.alturaOpcion)
-            .clip(RoundedCornerShape(20.dp))
+            .clip(forma)
             .background(fondo)
-            .border(BorderStroke(if (estado == EstadoOpcion.NEUTRA) 1.dp else 2.dp, borde), RoundedCornerShape(20.dp))
+            .border(BorderStroke(if (estado == EstadoOpcion.NEUTRA) 1.5.dp else 2.5.dp, borde), forma)
             .clickable(enabled = habilitada, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         contentAlignment = Alignment.Center
@@ -245,8 +304,8 @@ private fun Opcion(
         Text(
             text = texto,
             fontSize = medida.opcion,
-            fontWeight = if (estado == EstadoOpcion.CORRECTA) FontWeight.SemiBold else FontWeight.Normal,
-            color = texto2,
+            fontWeight = FontWeight.Bold,
+            color = color,
             textAlign = TextAlign.Center
         )
     }
@@ -254,25 +313,27 @@ private fun Opcion(
 
 /** Tras responder se muestran las demás traducciones válidas, que es donde se aprende. */
 @Composable
-private fun Explicacion(question: Question, acierto: Boolean) {
-    val colores = coloresRespuesta()
+private fun Explicacion(question: Question, acierto: Boolean, medida: Medidas) {
     val palabra = question.word
     Column(Modifier.fillMaxWidth()) {
         Text(
             text = if (acierto) "Correcto" else "Era: ${question.correctOption}",
-            color = if (acierto) colores.acierto else colores.fallo,
-            fontWeight = FontWeight.Bold
+            color = if (acierto) Acierto else Fallo,
+            fontSize = medida.explicacion,
+            fontWeight = FontWeight.ExtraBold
         )
         Spacer(Modifier.height(4.dp))
         Text(
             text = "${palabra.en} · ${palabra.pos.name.lowercase()} · ${palabra.cefr}",
-            style = MaterialTheme.typography.bodySmall,
+            fontSize = medida.explicacion,
+            fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         if (palabra.esAlt.isNotEmpty()) {
             Text(
                 text = "También: ${palabra.esAlt.joinToString(", ")}",
-                style = MaterialTheme.typography.bodySmall,
+                fontSize = medida.explicacion,
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -286,10 +347,10 @@ private fun BotonSiguiente(onNext: () -> Unit, medida: Medidas) {
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = medida.alturaOpcion),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
-        Text("Siguiente", fontSize = medida.opcion, fontWeight = FontWeight.SemiBold)
+        Text("Siguiente", fontSize = medida.opcion, fontWeight = FontWeight.ExtraBold)
     }
 }
 
