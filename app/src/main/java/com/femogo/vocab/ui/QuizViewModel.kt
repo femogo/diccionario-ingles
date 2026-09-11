@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.femogo.vocab.VocabApplication
 import com.femogo.vocab.engine.Card
 import com.femogo.vocab.engine.Cefr
+import com.femogo.vocab.engine.ColaDePreguntas
 import com.femogo.vocab.engine.DirectionMode
 import com.femogo.vocab.engine.NivelProgreso
 import com.femogo.vocab.engine.ProgresoNivel
@@ -46,13 +47,13 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     private val quizBuilder = QuizBuilder()
     private val scheduler = Scheduler(leitner)
     private val progresoNivel = ProgresoNivel(leitner)
+    private val cola = ColaDePreguntas(scheduler)
 
     private val _state = MutableStateFlow(QuizUiState())
     val state: StateFlow<QuizUiState> = _state.asStateFlow()
 
     private var catalog: List<Word> = emptyList()
     private val cards = mutableMapOf<Int, Card>()
-    private var cola = ArrayDeque<Word>()
     private var optionCount = 4
 
     // Ventana corta de resultados. El planificador la usa para mezclar más
@@ -82,8 +83,7 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
                 _state.value = QuizUiState(loading = false, sinDiccionario = true)
                 return@launch
             }
-            cola.clear()
-            rellenar()
+            cola.vaciar()
             _state.value = QuizUiState(loading = false)
             recalcularNivel()
             mostrarSiguiente()
@@ -94,9 +94,8 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     fun recargarCatalogo() {
         viewModelScope.launch {
             catalog = repo.catalog()
-            cola.clear()
+            cola.vaciar()
             if (catalog.isNotEmpty()) {
-                rellenar()
                 _state.value = _state.value.copy(sinDiccionario = false)
                 recalcularNivel()
                 mostrarSiguiente()
@@ -104,22 +103,8 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun rellenar() {
-        val pendientes = cola.map { it.rank }.toSet()
-        scheduler.buildQueue(
-            catalog = catalog,
-            cards = cards,
-            now = System.currentTimeMillis(),
-            size = TAMAÑO_COLA,
-            aciertoReciente = aciertoReciente
-        )
-            .filter { it.rank !in pendientes }
-            .forEach { cola.addLast(it) }
-    }
-
     private fun mostrarSiguiente() {
-        if (cola.size <= RELLENAR_BAJO) rellenar()
-        val word = cola.removeFirstOrNull()
+        val word = cola.siguiente(catalog, cards, System.currentTimeMillis(), aciertoReciente)
         if (word == null) {
             _state.value = _state.value.copy(question = null, sinDiccionario = catalog.isEmpty())
             return
@@ -147,6 +132,10 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
         val card = cards[question.word.rank] ?: leitner.newCard(question.word.rank, ahora)
         val actualizada = leitner.answer(card, acierto, ahora)
         cards[question.word.rank] = actualizada
+
+        // Lo fallado vuelve unas preguntas después, no dentro de diez minutos:
+        // a ritmo rápido esos minutos son cientos de preguntas de espera.
+        if (!acierto) cola.reintentar(question.word)
 
         ultimas.addLast(acierto)
         while (ultimas.size > VENTANA) ultimas.removeFirst()
@@ -183,8 +172,6 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private companion object {
-        const val TAMAÑO_COLA = 40
-        const val RELLENAR_BAJO = 8
         /** Respuestas que se tienen en cuenta para medir cómo va la cosa. */
         const val VENTANA = 50
         const val MINIMO_PARA_AJUSTAR = 15

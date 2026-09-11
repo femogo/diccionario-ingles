@@ -71,6 +71,25 @@ Con eso, a tres meses: 681 palabras vistas, 317 en la última caja, y cinco
 niveles tocados en lugar de dos. Cuesta que A1 tarde más en asentarse —69 % en
 vez de 95 %— porque el esfuerzo se reparte. Es el intercambio que se eligió.
 
+## El reintento no va por reloj
+
+Lo fallado vuelve **doce preguntas después**, no diez minutos después.
+
+Parece un detalle y no lo es. Los intervalos de Leitner cuentan en minutos y
+días, lo que da por supuesto un ritmo de estudio pausado. Jugando a tres
+segundos por palabra, los diez minutos de la primera caja son doscientas
+preguntas de por medio. Medido en simulación, en una sesión de 300 preguntas:
+
+| a 3 s/palabra | por reloj | por turnos |
+|---|---|---|
+| repasos de 300 | 17 | 62 |
+| primer repaso | pregunta #232 | pregunta #15 |
+| falladas revisitadas | 17 de 60 | 47 de 48 |
+
+Con el reintento por turnos el reparto sale idéntico a 3, 8 o 20 segundos por
+palabra: el ritmo al que juegues deja de cambiar el juego. El vencimiento por
+reloj sigue ahí como red para cuando se cierra la aplicación.
+
 ## La barra de nivel
 
 Sobre la pregunta hay una escala del marco europeo, un tramo por nivel, que se
