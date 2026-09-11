@@ -25,15 +25,12 @@ data class QuizUiState(
     val question: Question? = null,
     /** Índice pulsado, o null si la pregunta sigue abierta. */
     val chosenIndex: Int? = null,
-    val respondidas: Int = 0,
-    val aciertos: Int = 0,
     val sinDiccionario: Boolean = false,
     val niveles: List<NivelProgreso> = emptyList(),
     val nivelAlcanzado: Cefr = Cefr.A1
 ) {
     val answered: Boolean get() = chosenIndex != null
     val wasCorrect: Boolean get() = chosenIndex != null && chosenIndex == question?.correctIndex
-    val racha: Int get() = aciertos
 }
 
 /**
@@ -76,7 +73,10 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
             catalog = repo.catalog()
             cards.clear()
             cards.putAll(repo.cards())
-            optionCount = settingsStore.flow.first().optionCount
+            val guardado = settingsStore.flow.first()
+            optionCount = guardado.optionCount
+            ultimas.clear()
+            guardado.ultimasRespuestas.forEach { ultimas.addLast(it == '1') }
 
             if (catalog.isEmpty()) {
                 _state.value = QuizUiState(loading = false, sinDiccionario = true)
@@ -150,14 +150,14 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
 
         ultimas.addLast(acierto)
         while (ultimas.size > VENTANA) ultimas.removeFirst()
+        val instantanea = ultimas.joinToString("") { if (it) "1" else "0" }
 
-        _state.value = actual.copy(
-            chosenIndex = chosen,
-            respondidas = actual.respondidas + 1,
-            aciertos = actual.aciertos + if (acierto) 1 else 0
-        )
+        _state.value = actual.copy(chosenIndex = chosen)
         recalcularNivel()
-        viewModelScope.launch { repo.save(actualizada, ahora) }
+        viewModelScope.launch {
+            repo.save(actualizada, ahora)
+            settingsStore.setUltimasRespuestas(instantanea)
+        }
     }
 
     fun next() {

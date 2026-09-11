@@ -64,7 +64,7 @@ data class CardEntity(
     val correct: Int,
     val streak: Int,
     val lastSeenAt: Long,
-    /** Cuándo se respondió por primera vez. Sirve para el tope diario de novedades. */
+    /** Cuándo se respondió por primera vez. Dato informativo: nada lo usa para decidir. */
     val introducedAt: Long
 ) {
     fun toDomain() = Card(rank, box, dueAt, seen, correct, streak, lastSeenAt)

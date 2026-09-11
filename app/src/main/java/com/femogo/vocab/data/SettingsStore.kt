@@ -18,7 +18,13 @@ private val Context.dataStore by preferencesDataStore(name = "ajustes")
 data class Settings(
     val optionCount: Int = 4,
     /** Huella del diccionario instalado, para saber si hay novedades. */
-    val dictionaryHash: String? = null
+    val dictionaryHash: String? = null,
+    /**
+     * Las últimas respuestas, como unos y ceros. Se guarda para que cerrar la
+     * aplicación no reinicie el ajuste de dificultad: el juego es continuo y
+     * cerrarlo no debería ser un corte.
+     */
+    val ultimasRespuestas: String = ""
 )
 
 class SettingsStore(private val context: Context) {
@@ -26,7 +32,8 @@ class SettingsStore(private val context: Context) {
     val flow: Flow<Settings> = context.dataStore.data.map { prefs ->
         Settings(
             optionCount = prefs[KEY_OPTIONS] ?: 4,
-            dictionaryHash = prefs[KEY_DICT_HASH]
+            dictionaryHash = prefs[KEY_DICT_HASH],
+            ultimasRespuestas = prefs[KEY_ULTIMAS] ?: ""
         )
     }
 
@@ -38,8 +45,13 @@ class SettingsStore(private val context: Context) {
         context.dataStore.edit { it[KEY_DICT_HASH] = hash }
     }
 
+    suspend fun setUltimasRespuestas(valor: String) {
+        context.dataStore.edit { it[KEY_ULTIMAS] = valor }
+    }
+
     private companion object {
         val KEY_OPTIONS = intPreferencesKey("options")
         val KEY_DICT_HASH = stringPreferencesKey("dict_hash")
+        val KEY_ULTIMAS = stringPreferencesKey("ultimas_respuestas")
     }
 }

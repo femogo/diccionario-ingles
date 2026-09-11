@@ -38,6 +38,15 @@ como traducción.
 
 ## Qué se pregunta y de dónde sale
 
+No hay sesiones ni cortes por día. El planificador no conoce más fecha que el
+`dueAt` de cada palabra, que es cuándo toca repasarla. La cola interna de 40
+preguntas se rellena antes de agotarse y nunca se ve terminar; cerrar la
+aplicación tampoco corta nada, porque la ventana de aciertos que ajusta la
+dificultad se guarda con el resto del progreso.
+
+(La simulación de `RecorridoTest` sí agrupa respuestas por días, pero eso es el
+banco de pruebas modelando uso realista, no el comportamiento de la aplicación.)
+
 Cada vez que la cola se rellena, se arma en tres capas: una reserva de palabras
 nuevas, los repasos ya vencidos empezando por las cajas bajas, y si sobra sitio,
 lo que vence más pronto. Las novedades se intercalan con los repasos en vez de
