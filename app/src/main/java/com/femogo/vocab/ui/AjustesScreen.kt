@@ -116,10 +116,8 @@ class AjustesViewModel(app: Application) : AndroidViewModel(app) {
                 is Biblioteca.Resultado.Instalados -> {
                     r.novedades.forEach { n ->
                         resumen.append(
-                            if (n.esNuevo) "Módulo nuevo: ${n.nombre}, ${n.palabras} palabras.
-"
-                            else "${n.nombre} actualizado: ${n.palabras} palabras.
-"
+                            if (n.esNuevo) "Módulo nuevo: ${n.nombre}, ${n.palabras} palabras.\n"
+                            else "${n.nombre} actualizado: ${n.palabras} palabras.\n"
                         )
                     }
                     cargarModulos()
@@ -131,27 +129,23 @@ class AjustesViewModel(app: Application) : AndroidViewModel(app) {
             _paso.value = "Buscando versiones de la aplicación…"
             val disponible = appUpdater.comprobar()
             if (disponible == null) {
-                resumen.append("
-La aplicación está en su última versión.")
+                resumen.append("\nLa aplicación está en su última versión.")
             } else {
                 val (version, url) = disponible
                 if (!appUpdater.puedeInstalar()) {
                     _permisoPendiente.value = true
-                    resumen.append("
-Hay una versión nueva (0.$version), pero falta " +
+                    resumen.append("\nHay una versión nueva (0.$version), pero falta " +
                         "darle permiso para instalar aplicaciones.")
                 } else {
                     _paso.value = "Descargando la versión 0.$version…"
                     appUpdater.descargar(url)
                         .onSuccess {
-                            resumen.append("
-Versión 0.$version descargada. " +
+                            resumen.append("\nVersión 0.$version descargada. " +
                                 "Confirma la instalación cuando te lo pida.")
                             appUpdater.instalar(it)
                         }
                         .onFailure {
-                            resumen.append("
-No se ha podido descargar la versión 0.$version: " +
+                            resumen.append("\nNo se ha podido descargar la versión 0.$version: " +
                                 (it.message ?: "fallo de red"))
                         }
                 }
