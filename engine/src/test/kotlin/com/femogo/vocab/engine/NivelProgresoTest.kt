@@ -23,11 +23,16 @@ class NivelProgresoTest {
     @Test
     fun `una palabra a medias aporta la mitad, no cero`() {
         // Con criterio de todo o nada esto seria 0 y el usuario no veria avance.
+        val mediaEscala = 1 + (leitner.boxCount - 1) / 2
+        val avanceEsperado = (mediaEscala - 1).toFloat() / (leitner.boxCount - 1)
         val catalogo = listOf(word(rank = 1, cefr = Cefr.A1), word(rank = 2, cefr = Cefr.A1))
-        val cards = mapOf(1 to Card(1, box = 4, seen = 3))   // caja 4 de 6 -> 0,6
+        val cards = mapOf(1 to Card(1, box = mediaEscala, seen = 3))
         val a1 = progreso.porNivel(catalogo, cards).first { it.cefr == Cefr.A1 }
 
-        assertEquals(0.3f, a1.dominio, 0.01f, "0,6 repartido entre las dos palabras del nivel")
+        assertEquals(
+            avanceEsperado / 2, a1.dominio, 0.01f,
+            "el avance de la palabra, repartido entre las dos del nivel"
+        )
         assertEquals(1, a1.vistas)
         assertEquals(2, a1.total)
     }

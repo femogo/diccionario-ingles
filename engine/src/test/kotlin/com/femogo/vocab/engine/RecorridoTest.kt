@@ -93,8 +93,8 @@ class RecorridoTest {
 
         val larga = jugar(catalogo, 20000, acierto = 0.8)
         assertTrue(
-            larga.cards.values.any { it.box >= 5 },
-            "jugando mucho tiene que haber palabras en las cajas altas"
+            larga.cards.values.any { it.box >= leitner.boxCount },
+            "jugando mucho tiene que haber palabras en la última caja"
         )
     }
 }

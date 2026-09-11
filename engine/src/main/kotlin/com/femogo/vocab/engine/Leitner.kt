@@ -65,13 +65,18 @@ class Leitner(
          * cada uno a su paso. La escala se estira sola con el uso, en vez de
          * castigar al que juega mucho con repasos que aún no ha ganado.
          *
-         * Los números salen de comparar cuatro escalas sobre partidas de cinco
-         * mil preguntas. Más cortos amontonan repasos y dejan al jugador viendo
-         * siempre las mismas: 599 palabras distintas en vez de 710. Más largos
-         * enseñan más vocabulario pero no dominan ninguna palabra en toda la
-         * partida, y entonces la barra de nivel no llega nunca a verde.
+         * Cuatro cajas y no seis, y eso salió de medirlo contra un jugador
+         * simulado que aprende y olvida. Con menos cajas se ven muchas más
+         * palabras distintas —2622 frente a 2142 en veinte mil preguntas— y esa
+         * amplitud compensa de sobra tener menos repasos por palabra: se acaban
+         * recordando más, no menos.
+         *
+         * Tres cajas recordaban todavía algo más, pero se quedan fuera por dos
+         * motivos que también están medidos: las palabras sabidas con soltura
+         * bajan de 2567 a 2405, y el acierto medio cae del 67 % al 62 %, que es
+         * jugar fallando cuatro de cada diez.
          */
-        val INTERVALOS = intArrayOf(12, 50, 180, 600, 2000, 6000)
+        val INTERVALOS = intArrayOf(12, 95, 750, 6000)
     }
 }
 

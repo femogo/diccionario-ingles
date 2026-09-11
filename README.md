@@ -20,17 +20,25 @@ preguntas.
 | Caja | Vuelve a preguntarse dentro de |
 |------|--------------------------------|
 | 1    | 12 preguntas                   |
-| 2    | 50 preguntas                   |
-| 3    | 180 preguntas                  |
-| 4    | 600 preguntas                  |
-| 5    | 2000 preguntas                 |
-| 6    | 6000 preguntas                 |
+| 2    | 95 preguntas                   |
+| 3    | 750 preguntas                  |
+| 4    | 6000 preguntas                 |
 
-Los números salen de comparar cuatro escalas sobre partidas de cinco mil
-preguntas. Más cortos amontonan repasos y dejan al jugador viendo siempre las
-mismas palabras: 599 distintas en lugar de 710. Más largos enseñan más
-vocabulario pero no llegan a dominar ninguna palabra en toda la partida, y
-entonces la barra de nivel no llega nunca a verde.
+**Cuatro cajas, no seis**, y eso está medido. Comparadas cinco escalas contra un
+jugador simulado que aprende y olvida, en partidas de veinte mil preguntas:
+
+| cajas | palabras vistas | recordadas al final | sabidas con soltura | acierto |
+|---|---|---|---|---|
+| 3 | 2971 | 2702 | 2405 | 62 % |
+| 4 | 2622 | 2546 | **2567** | 67 % |
+| 5 | 2365 | 2330 | 2334 | 70 % |
+| 6 | 2142 | 2123 | 2123 | 73 % |
+| 8 | 1850 | 1839 | 1833 | 76 % |
+
+Menos cajas enseñan más, al revés de lo que parece: se ven muchas más palabras
+distintas y esa amplitud compensa de sobra tener menos repasos por palabra.
+Tres recordaban todavía algo más, pero bajan las sabidas con soltura y el
+acierto cae al 62 %, que es jugar fallando cuatro de cada diez.
 
 Es lo contrario de repetir más lo que ya sabes: lo dominado se espacia para
 dejar sitio a lo que todavía falla.

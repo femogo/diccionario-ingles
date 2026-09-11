@@ -134,13 +134,19 @@ class Mezcla(
          * Parte de la sesión que sigue siendo nueva por muchos repasos que se
          * acumulen.
          *
-         * Elegido midiendo partidas de veinte mil preguntas. Al 5 % el flujo de
-         * novedades se estancaba en 93 palabras por cada dos mil preguntas; al
-         * 10 % salen más palabras vistas Y más dominadas, así que no es un
-         * intercambio sino una mejora en las dos. Al 15 % en cambio entran tantas
-         * que casi ninguna llega a la última caja, y al 25 % ninguna: el
-         * diccionario se recorre sin aprender nada.
+         * Medido en partidas de veinte mil preguntas contra un jugador que
+         * olvida, contando palabras que sabría si le preguntaran al final:
+         *
+         *     10 % -> 2574    15 % -> 2618    20 % -> 2757
+         *     25 % -> 2113    30 % -> 1075
+         *
+         * El máximo está en el 20 %, y no se coge. Justo después hay un
+         * derrumbe: cinco puntos más y se pierden seiscientas palabras, porque
+         * entran más deprisa de lo que se pueden asentar. El 20 % es la cima de
+         * un acantilado calculada por un modelo aproximado, así que el ajuste se
+         * queda un escalón antes: rinde un 5 % menos y, si el modelo se
+         * equivoca, sigue subiendo en vez de desplomarse.
          */
-        const val MINIMO_NOVEDAD = 0.10f
+        const val MINIMO_NOVEDAD = 0.15f
     }
 }

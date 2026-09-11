@@ -14,7 +14,7 @@ class LeitnerTest {
         val after = leitner.answer(card, correct = true, turno = 100)
 
         assertEquals(2, after.box)
-        assertEquals(100 + 50, after.dueTurn, "caja 2: cincuenta preguntas más adelante")
+        assertEquals(100 + 95, after.dueTurn, "caja 2: noventa y cinco preguntas más adelante")
         assertEquals(1, after.seen)
         assertEquals(1, after.correct)
         assertEquals(1, after.streak)
@@ -24,7 +24,7 @@ class LeitnerTest {
     fun `fallar devuelve a la primera caja y rompe la racha`() {
         var card = leitner.newCard(1)
         repeat(3) { card = leitner.answer(card, correct = true, turno = 0) }
-        assertEquals(4, card.box)
+        assertEquals(leitner.boxCount, card.box)
 
         val failed = leitner.answer(card, correct = false, turno = 500)
         assertEquals(1, failed.box)
