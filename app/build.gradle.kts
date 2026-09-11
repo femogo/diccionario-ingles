@@ -13,8 +13,12 @@ android {
         applicationId = "com.femogo.vocab"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2"
+        // El número de ejecución de la integración continua hace de versión.
+        // Sube solo en cada compilación, que es lo que la aplicación compara
+        // para saber si la publicada es más nueva que la instalada. En local
+        // vale 1 y no molesta.
+        versionCode = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInt()
+        versionName = "0." + (System.getenv("GITHUB_RUN_NUMBER") ?: "1")
     }
 
     // Clave de depuración fija, guardada en el repositorio a propósito.

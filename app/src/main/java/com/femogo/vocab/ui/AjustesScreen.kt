@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.femogo.vocab.VocabApplication
+import com.femogo.vocab.data.AppUpdater
 import com.femogo.vocab.data.DictionaryUpdater
 import com.femogo.vocab.data.Settings
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,6 +59,7 @@ class AjustesViewModel(app: Application) : AndroidViewModel(app) {
     private val store = (app as VocabApplication).settings
     private val repo = (app as VocabApplication).repository
     private val updater = DictionaryUpdater(app, repo)
+    private val appUpdater = AppUpdater(app)
 
     val settings: StateFlow<Settings> =
         store.flow.stateIn(viewModelScope, SharingStarted.Eagerly, Settings())
@@ -67,6 +69,12 @@ class AjustesViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _actualizando = MutableStateFlow(false)
     val actualizando: StateFlow<Boolean> = _actualizando.asStateFlow()
+
+    private val _paso = MutableStateFlow("")
+    val paso: StateFlow<String> = _paso.asStateFlow()
+
+    private val _permisoPendiente = MutableStateFlow(false)
+    val permisoPendiente: StateFlow<Boolean> = _permisoPendiente.asStateFlow()
 
     private val _palabras = MutableStateFlow(0)
     val palabras: StateFlow<Int> = _palabras.asStateFlow()
@@ -80,30 +88,73 @@ class AjustesViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /**
-     * Descarga el diccionario del repositorio y lo instala si ha cambiado.
-     * [alTerminar] avisa a la pantalla de juego para que deje de preguntar por
-     * el catálogo viejo.
+     * Busca novedades de las dos cosas que pueden cambiar: las palabras y la
+     * propia aplicación. [alTerminar] avisa a la pantalla de juego para que deje
+     * de preguntar por el catálogo viejo.
+     *
+     * El último paso no puede ser automático. Android solo permite instalar sin
+     * confirmación a aplicaciones del sistema, así que aquí se descarga todo y
+     * se abre el instalador para que baste un toque.
      */
-    fun actualizarDiccionario(alTerminar: () -> Unit) {
+    fun actualizar(alTerminar: () -> Unit) {
         if (_actualizando.value) return
         viewModelScope.launch {
             _actualizando.value = true
+            val resumen = StringBuilder()
+
+            _paso.value = "Buscando palabras nuevas…"
             val huella = store.flow.first().dictionaryHash
             val (resultado, nueva) = updater.actualizar(huella)
-            _mensaje.value = when (resultado) {
-                is DictionaryUpdater.Resultado.AlDia -> "Ya tienes la última versión"
+            when (resultado) {
+                is DictionaryUpdater.Resultado.AlDia ->
+                    resumen.append("El diccionario ya está al día.")
                 is DictionaryUpdater.Resultado.Instalado -> {
                     nueva?.let { store.setDictionaryHash(it) }
                     contarPalabras()
                     alTerminar()
-                    "Instaladas ${resultado.palabras} palabras" +
-                        if (resultado.descartadas > 0) ", ${resultado.descartadas} líneas descartadas" else ""
+                    resumen.append("Instaladas ${resultado.palabras} palabras.")
                 }
-                is DictionaryUpdater.Resultado.Fallo -> resultado.motivo
+                is DictionaryUpdater.Resultado.Fallo ->
+                    resumen.append(resultado.motivo)
             }
+
+            _paso.value = "Buscando versiones de la aplicación…"
+            val disponible = appUpdater.comprobar()
+            if (disponible == null) {
+                resumen.append("\nLa aplicación está en su última versión.")
+            } else {
+                val (version, url) = disponible
+                if (!appUpdater.puedeInstalar()) {
+                    _permisoPendiente.value = true
+                    resumen.append("\nHay una versión nueva (0.$version), pero falta " +
+                        "darle permiso para instalar aplicaciones.")
+                } else {
+                    _paso.value = "Descargando la versión 0.$version…"
+                    appUpdater.descargar(url)
+                        .onSuccess {
+                            resumen.append("\nVersión 0.$version descargada. " +
+                                "Confirma la instalación cuando te lo pida.")
+                            appUpdater.instalar(it)
+                        }
+                        .onFailure {
+                            resumen.append("\nNo se ha podido descargar la versión 0.$version: " +
+                                (it.message ?: "fallo de red"))
+                        }
+                }
+            }
+
+            _paso.value = ""
+            _mensaje.value = resumen.toString()
             _actualizando.value = false
         }
     }
+
+    fun abrirPermisoDeInstalacion() {
+        _permisoPendiente.value = false
+        appUpdater.abrirAjustesDePermiso()
+    }
+
+    fun descartarPermiso() { _permisoPendiente.value = false }
 
     fun reiniciarProgreso() {
         viewModelScope.launch {
@@ -124,6 +175,8 @@ fun AjustesScreen(
     val settings by vm.settings.collectAsState()
     val mensaje by vm.mensaje.collectAsState()
     val actualizando by vm.actualizando.collectAsState()
+    val paso by vm.paso.collectAsState()
+    val permisoPendiente by vm.permisoPendiente.collectAsState()
     val palabras by vm.palabras.collectAsState()
     var confirmarReinicio by remember { mutableStateOf(false) }
 
@@ -155,17 +208,18 @@ fun AjustesScreen(
             )
 
             Spacer(Modifier.height(36.dp))
-            Text("Diccionario", style = MaterialTheme.typography.titleMedium)
+            Text("Actualizaciones", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(4.dp))
             Text(
-                "$palabras palabras instaladas. Al actualizar se descarga la última " +
-                    "versión del repositorio. Tu progreso no se toca.",
+                "$palabras palabras instaladas. Busca palabras nuevas y versiones " +
+                    "nuevas de la aplicación. Tu progreso no se toca. La instalación " +
+                    "la confirmas tú: Android no deja que una aplicación se instale sola.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(Modifier.height(14.dp))
             Button(
-                onClick = { vm.actualizarDiccionario(onDiccionarioActualizado) },
+                onClick = { vm.actualizar(onDiccionarioActualizado) },
                 enabled = !actualizando,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -179,9 +233,12 @@ fun AjustesScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(Modifier.size(12.dp))
-                    Text("Buscando novedades…", fontWeight = FontWeight.SemiBold)
+                    Text(
+                        paso.ifEmpty { "Buscando novedades…" },
+                        fontWeight = FontWeight.SemiBold
+                    )
                 } else {
-                    Text("Actualizar diccionario", fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Buscar actualizaciones", fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -207,6 +264,27 @@ fun AjustesScreen(
             confirmButton = { TextButton(onClick = vm::limpiarMensaje) { Text("Vale") } },
             text = { Text(it) },
             shape = RoundedCornerShape(24.dp)
+        )
+    }
+
+    if (permisoPendiente) {
+        AlertDialog(
+            onDismissRequest = vm::descartarPermiso,
+            title = { Text("Permiso para instalar") },
+            text = {
+                Text(
+                    "Android exige que autorices a esta aplicación a instalar " +
+                        "actualizaciones. Se abrirán los ajustes del sistema; activa " +
+                        "el permiso y vuelve a pulsar Buscar actualizaciones."
+                )
+            },
+            shape = RoundedCornerShape(24.dp),
+            confirmButton = {
+                TextButton(onClick = vm::abrirPermisoDeInstalacion) { Text("Abrir ajustes") }
+            },
+            dismissButton = {
+                TextButton(onClick = vm::descartarPermiso) { Text("Ahora no") }
+            }
         )
     }
 

@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   motor:
     name: Pruebas del motor
@@ -42,3 +45,19 @@ jobs:
           name: vocabulario-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      # Además del artefacto, una publicación. Los artefactos de Actions no se
+      # pueden descargar sin credenciales ni en repositorios públicos, así que
+      # la aplicación no podría buscarse actualizaciones a sí misma; los
+      # archivos de una publicación sí tienen URL estable y abierta.
+      - name: Publicar version
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="v${{ github.run_number }}"
+          gh release create "$version" \
+            app/build/outputs/apk/debug/app-debug.apk \
+            --title "Vocabulario $version" \
+            --notes "Compilado de $(git log -1 --pretty=%s)" \
+            --latest

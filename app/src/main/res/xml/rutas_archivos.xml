@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Solo la carpeta del APK descargado. El instalador del sistema necesita
+         leerlo, y no hay motivo para exponerle nada más. -->
+    <cache-path name="actualizacion" path="actualizacion/" />
+</paths>

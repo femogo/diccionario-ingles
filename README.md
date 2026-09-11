@@ -135,14 +135,31 @@ frecuencia. Es una aproximación, no una medida.
 
 ### Actualizar desde la aplicación
 
-El botón de Ajustes descarga `words.txt` del repositorio y lo instala si ha
+El botón de Ajustes busca las dos cosas que pueden cambiar.
+
+**Las palabras**: descarga `words.txt` del repositorio y lo instala si ha
 cambiado, comparando una huella del contenido para no reinstalar lo mismo. El
 progreso no se toca: vive en otra tabla y se reenlaza por posición en la lista
 de frecuencia.
 
+**La propia aplicación**: consulta la última publicación, y si su etiqueta es
+mayor que el `versionCode` instalado, descarga el APK y abre el instalador.
+
+Lo que no puede hacer es instalarse sola. Android reserva la instalación
+silenciosa a las aplicaciones del sistema firmadas con la clave de plataforma,
+al administrador de una instalación gestionada, o a un móvil con root. No es un
+permiso que se pueda pedir, y existe para que una aplicación no instale cosas a
+espaldas de quien la usa. Lo que sí hace es dejarlo todo descargado para que
+baste un toque, y la primera vez hay que concederle "Instalar apps
+desconocidas".
+
+Cada compilación de `main` publica una versión etiquetada con el número de
+ejecución, que es también el `versionCode` del APK. Esa es la comparación.
+
 **Requiere que el repositorio sea público.** GitHub sirve los archivos en crudo
-de repositorios privados solo con credenciales, y un token dentro del APK está
-publicado de hecho: cualquiera puede extraerlo del archivo instalado.
+y los de las publicaciones de repositorios privados solo con credenciales, y un
+token dentro del APK está publicado de hecho: cualquiera puede extraerlo del
+archivo instalado.
 
 ### Formato
 
