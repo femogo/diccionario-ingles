@@ -36,7 +36,18 @@ jobs:
       - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v4
 
-      - run: ./gradlew :app:assembleDebug --stacktrace
+      # Los errores se repiten como anotaciones del propio flujo: el registro
+      # completo solo se descarga con credenciales, y sin poder leerlo depurar
+      # una compilación fallida se vuelve adivinar.
+      - name: Compilar APK
+        run: |
+          set -o pipefail
+          if ! ./gradlew :app:assembleDebug --stacktrace 2>&1 | tee /tmp/compilacion.log; then
+            grep -E "^e: |error:|Caused by:" /tmp/compilacion.log | head -40 | while IFS= read -r linea; do
+              echo "::error::${linea}"
+            done
+            exit 1
+          fi
 
       # El APK de depuración va firmado con la clave de depuración, así que se
       # instala directamente en el móvil sin más trámite.
