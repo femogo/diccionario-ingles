@@ -62,13 +62,13 @@ class ProgresoViewModel(app: Application) : AndroidViewModel(app) {
             repo.ensureSeeded()
             val catalogo = repo.catalog()
             val cards = repo.cards().values.filter { !it.isNew }
-            val now = System.currentTimeMillis()
+            val turno = repo.turnoActual()
 
             _state.value = ProgresoUiState(
                 catalogo = catalogo.size,
                 empezadas = cards.size,
                 dominadas = cards.count { leitner.isMastered(it) },
-                vencidas = cards.count { it.dueAt <= now },
+                vencidas = cards.count { it.dueTurn <= turno },
                 aciertos = cards.sumOf { it.correct },
                 respuestas = cards.sumOf { it.seen },
                 porCaja = (1..leitner.boxCount).map { caja -> cards.count { it.box == caja } }

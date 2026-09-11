@@ -12,17 +12,33 @@ El progreso nunca abandona el dispositivo.
 Cada palabra está en una caja del 1 al 6. Acertar la sube una caja y aleja la
 siguiente revisión; fallar la devuelve a la caja 1.
 
-| Caja | Vuelve a preguntarse en |
-|------|-------------------------|
-| 1    | 10 minutos              |
-| 2    | 1 día                   |
-| 3    | 3 días                  |
-| 4    | 1 semana                |
-| 5    | 3 semanas               |
-| 6    | 2 meses                 |
+**El espaciado se mide en preguntas respondidas, no en tiempo.** El motor no
+sabe qué día es. Una tarde de tres horas y una semana sin abrir la aplicación
+son exactamente lo mismo para él: lo único que avanza es el contador de
+preguntas.
+
+| Caja | Vuelve a preguntarse dentro de |
+|------|--------------------------------|
+| 1    | 12 preguntas                   |
+| 2    | 50 preguntas                   |
+| 3    | 180 preguntas                  |
+| 4    | 600 preguntas                  |
+| 5    | 2000 preguntas                 |
+| 6    | 6000 preguntas                 |
+
+Los números salen de comparar cuatro escalas sobre partidas de cinco mil
+preguntas. Más cortos amontonan repasos y dejan al jugador viendo siempre las
+mismas palabras: 599 distintas en lugar de 710. Más largos enseñan más
+vocabulario pero no llegan a dominar ninguna palabra en toda la partida, y
+entonces la barra de nivel no llega nunca a verde.
 
 Es lo contrario de repetir más lo que ya sabes: lo dominado se espacia para
 dejar sitio a lo que todavía falla.
+
+El precio de contar en turnos está asumido a conciencia: repasar algo a los
+treinta días funciona porque han pasado treinta días, y midiendo en preguntas el
+olvido real de una temporada sin jugar no se refleja. A cambio, el juego va al
+ritmo de quien juega y no al del calendario.
 
 En modo mixto la dirección de la pregunta cambia con el dominio. Las cajas 1 y 2
 preguntan inglés a español, que es reconocer. A partir de la 3 se invierte a
@@ -71,24 +87,18 @@ Con eso, a tres meses: 681 palabras vistas, 317 en la última caja, y cinco
 niveles tocados en lugar de dos. Cuesta que A1 tarde más en asentarse —69 % en
 vez de 95 %— porque el esfuerzo se reparte. Es el intercambio que se eligió.
 
-## El reintento no va por reloj
+## El reintento inmediato
 
-Lo fallado vuelve **doce preguntas después**, no diez minutos después.
+Además del espaciado, lo recién fallado vuelve a la cola entre ocho y dieciséis
+preguntas más adelante. Es más corto que el intervalo de la primera caja y sirve
+para que fallar tenga consecuencia inmediata sin repetir la palabra a
+continuación, que sería contestar de memoria.
 
-Parece un detalle y no lo es. Los intervalos de Leitner cuentan en minutos y
-días, lo que da por supuesto un ritmo de estudio pausado. Jugando a tres
-segundos por palabra, los diez minutos de la primera caja son doscientas
-preguntas de por medio. Medido en simulación, en una sesión de 300 preguntas:
-
-| a 3 s/palabra | por reloj | por turnos |
-|---|---|---|
-| repasos de 300 | 17 | 62 |
-| primer repaso | pregunta #232 | pregunta #15 |
-| falladas revisitadas | 17 de 60 | 47 de 48 |
-
-Con el reintento por turnos el reparto sale idéntico a 3, 8 o 20 segundos por
-palabra: el ritmo al que juegues deja de cambiar el juego. El vencimiento por
-reloj sigue ahí como red para cuando se cierra la aplicación.
+Antes de medir el espaciado en turnos esto era imprescindible: con intervalos de
+reloj, jugando a tres segundos por palabra, de sesenta palabras falladas solo
+diecisiete volvían a aparecer en trescientas preguntas, y la primera en la
+pregunta doscientos treinta y dos. Ahora que todo va por turnos sigue siendo
+útil, pero ya no tapa un agujero.
 
 ## La barra de nivel
 

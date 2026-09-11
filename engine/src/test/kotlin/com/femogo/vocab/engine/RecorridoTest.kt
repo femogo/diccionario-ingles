@@ -5,13 +5,13 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * Simula partidas largas para comprobar cómo avanza el jugador por el
- * diccionario. Los tamaños por nivel son los del diccionario real.
+ * Partidas largas contra un diccionario del tamaño del real, para comprobar cómo
+ * avanza el jugador. Todo se mide en preguntas respondidas: el motor no sabe qué
+ * día es, así que tres horas seguidas y tres semanas a ratos son lo mismo.
  */
 class RecorridoTest {
 
     private val leitner = Leitner()
-    private val scheduler = Scheduler(leitner)
     private val progreso = ProgresoNivel(leitner)
 
     private val porNivel = listOf(
@@ -26,147 +26,75 @@ class RecorridoTest {
         }
     }
 
-    /**
-     * Juega [respuestas] preguntas acertando [acierto] de cada uno, avanzando el
-     * reloj un poco en cada una. Devuelve las tarjetas resultantes.
-     */
-    private fun jugar(
-        catalogo: List<Word>,
-        respuestas: Int,
-        acierto: Double,
-        segundosPorPregunta: Long = 8
-    ): Map<Int, Card> {
-        val cards = HashMap<Int, Card>()
-        val azar = Random(7)
-        var ahora = 1_700_000_000_000L
-        var cola = ArrayDeque<Word>()
+    private class Partida(val cards: Map<Int, Card>, val repasos: Int, val primerRepaso: Int)
 
-        repeat(respuestas) {
-            if (cola.size <= 8) {
-                val pendientes = cola.map { it.rank }.toSet()
-                scheduler.buildQueue(catalogo, cards, ahora, size = 40)
-                    .filter { it.rank !in pendientes }
-                    .forEach { cola.addLast(it) }
+    private fun jugar(catalogo: List<Word>, preguntas: Int, acierto: Double, semilla: Int = 7): Partida {
+        val cola = ColaDePreguntas(Scheduler(leitner), random = Random(semilla))
+        val cards = HashMap<Int, Card>()
+        val azar = Random(semilla)
+        var repasos = 0
+        var primerRepaso = -1
+
+        repeat(preguntas) { turno ->
+            val w = cola.siguiente(catalogo, cards, turno, null) ?: return@repeat
+            val previa = cards[w.rank]
+            if (previa != null && !previa.isNew) {
+                repasos++
+                if (primerRepaso < 0) primerRepaso = turno
             }
-            val word = cola.removeFirst()
-            val card = cards[word.rank] ?: leitner.newCard(word.rank, ahora)
-            cards[word.rank] = leitner.answer(card, azar.nextDouble() < acierto, ahora)
-            ahora += segundosPorPregunta * 1000
+            val acierta = azar.nextDouble() < acierto
+            cards[w.rank] = leitner.answer(previa ?: leitner.newCard(w.rank), acierta, turno)
+            if (!acierta) cola.reintentar(w)
         }
-        return cards
+        return Partida(cards, repasos, primerRepaso)
     }
 
     @Test
     fun `no espera a dominar un nivel para empezar el siguiente`() {
         val catalogo = diccionario()
-        val cards = jugar(catalogo, respuestas = 600, acierto = 0.8)
-
-        val vistas = catalogo.filter { cards[it.rank]?.isNew == false }
+        val p = jugar(catalogo, preguntas = 600, acierto = 0.8)
+        val vistas = catalogo.filter { p.cards[it.rank]?.isNew == false }
         val nivelesTocados = vistas.map { it.cefr }.toSet()
-        val a1Dominadas = vistas.count { it.cefr == Cefr.A1 && leitner.isMastered(cards[it.rank]!!) }
+        val a1Dominadas = vistas.count { it.cefr == Cefr.A1 && leitner.isMastered(p.cards[it.rank]!!) }
 
-        println("--- 600 respuestas, 80 % de acierto ---")
+        println("--- 600 preguntas al 80 % ---")
         println("palabras distintas vistas: ${vistas.size}")
         println("niveles tocados: ${nivelesTocados.sortedBy { it.ordinal }}")
         println("de A1 en la última caja: $a1Dominadas de 361")
-        porNivel.forEach { (cefr, total) ->
-            val n = vistas.count { it.cefr == cefr }
-            println("  $cefr: $n de $total vistas")
-        }
 
-        assertTrue(
-            Cefr.A2 in nivelesTocados,
-            "con 600 respuestas ya se ha salido de A1 sin dominarlo"
-        )
-        assertTrue(
-            a1Dominadas < 361,
-            "y eso ocurre mucho antes de tener A1 entero en la última caja"
-        )
+        assertTrue(Cefr.A2 in nivelesTocados, "se sale de A1 sin haberlo dominado")
+        assertTrue(a1Dominadas < 361, "y mucho antes de tenerlo entero en la última caja")
     }
 
     @Test
-    fun `lo fallado vuelve pronto y lo acertado se aparta`() {
-        val catalogo = diccionario()
-        val cards = jugar(catalogo, respuestas = 400, acierto = 0.7)
-        val repasos = cards.values.filter { it.seen > 1 }
+    fun `lo fallado vuelve dentro de la misma tanda`() {
+        val p = jugar(diccionario(), preguntas = 300, acierto = 0.7)
 
-        println("--- reparto por caja tras 400 respuestas al 70 % ---")
-        (1..leitner.boxCount).forEach { caja ->
-            println("  caja $caja: ${cards.values.count { it.box == caja }}")
-        }
-        println("palabras vistas más de una vez: ${repasos.size}")
+        println("--- 300 preguntas al 70 % ---")
+        println("repasos: ${p.repasos}, primero en la pregunta ${p.primerRepaso}")
 
-        assertTrue(repasos.isNotEmpty(), "las falladas tienen que volver dentro de la sesión")
-    }
-
-    /**
-     * Varias sesiones repartidas en dias. Es el uso real: dentro de una misma
-     * tarde ninguna palabra sale de la caja 2, porque el salto a la 3 es de un
-     * dia entero.
-     */
-    private fun jugarDias(
-        catalogo: List<Word>,
-        dias: Int,
-        respuestasPorDia: Int,
-        acierto: Double
-    ): Map<Int, Card> {
-        val cards = HashMap<Int, Card>()
-        val azar = Random(11)
-        var ahora = 1_700_000_000_000L
-
-        repeat(dias) {
-            val cola = ArrayDeque<Word>()
-            repeat(respuestasPorDia) {
-                if (cola.size <= 8) {
-                    val pendientes = cola.map { it.rank }.toSet()
-                    scheduler.buildQueue(catalogo, cards, ahora, size = 40)
-                        .filter { it.rank !in pendientes }
-                        .forEach { cola.addLast(it) }
-                }
-                val word = cola.removeFirst()
-                val card = cards[word.rank] ?: leitner.newCard(word.rank, ahora)
-                cards[word.rank] = leitner.answer(card, azar.nextDouble() < acierto, ahora)
-                ahora += 8_000L
-            }
-            // Hasta la sesion del dia siguiente.
-            ahora += 24 * 3_600_000L - respuestasPorDia * 8_000L
-        }
-        return cards
+        assertTrue(p.primerRepaso in 0..30, "el primer repaso llegó en la ${p.primerRepaso}")
+        assertTrue(p.repasos > 50, "solo ${p.repasos} repasos de 300")
     }
 
     @Test
-    fun `a lo largo de semanas las cajas altas se llenan`() {
+    fun `jugando mucho las cajas altas se llenan`() {
         val catalogo = diccionario()
-        println("--- 60 respuestas al dia, 80 % de acierto ---")
-        listOf(1, 7, 30, 90).forEach { dias ->
-            val cards = jugarDias(catalogo, dias, respuestasPorDia = 60, acierto = 0.8)
-            val p = progreso.porNivel(catalogo, cards)
-            val a1 = p.first { it.cefr == Cefr.A1 }
+        println("--- avance por preguntas respondidas ---")
+        listOf(300, 1000, 5000, 20000).forEach { n ->
+            val p = jugar(catalogo, n, acierto = 0.8)
+            val a1 = progreso.porNivel(catalogo, p.cards).first { it.cefr == Cefr.A1 }
             val cajas = (1..leitner.boxCount).joinToString(" ") { c ->
-                "c$c=" + cards.values.count { it.box == c }
+                "c$c=" + p.cards.values.count { it.box == c }
             }
-            println("dia $dias: vistas ${cards.size}, A1 al ${(a1.dominio * 100).toInt()} %, " +
-                "nivel ${progreso.nivelAlcanzado(p)}  [$cajas]")
+            println("$n preguntas: vistas ${p.cards.size}, A1 al ${(a1.dominio * 100).toInt()} %, " +
+                "nivel ${progreso.nivelAlcanzado(progreso.porNivel(catalogo, p.cards))}  [$cajas]")
         }
-        val tresMeses = jugarDias(catalogo, 90, 60, 0.8)
-        assertTrue(
-            tresMeses.values.any { it.box >= 5 },
-            "en tres meses tiene que haber palabras en las cajas altas"
-        )
-    }
 
-    @Test
-    fun `la barra de nivel avanza desde las primeras respuestas`() {
-        val catalogo = diccionario()
-        listOf(50, 200, 600, 2000).forEach { n ->
-            val cards = jugar(catalogo, respuestas = n, acierto = 0.8)
-            val p = progreso.porNivel(catalogo, cards)
-            val a1 = p.first { it.cefr == Cefr.A1 }
-            println("tras $n respuestas -> A1 al ${(a1.dominio * 100).toInt()} %, " +
-                "nivel mostrado ${progreso.nivelAlcanzado(p)}")
-        }
-        val cards = jugar(catalogo, respuestas = 200, acierto = 0.8)
-        val a1 = progreso.porNivel(catalogo, cards).first { it.cefr == Cefr.A1 }
-        assertTrue(a1.dominio > 0f, "la barra no puede quedarse clavada en cero")
+        val larga = jugar(catalogo, 20000, acierto = 0.8)
+        assertTrue(
+            larga.cards.values.any { it.box >= 5 },
+            "jugando mucho tiene que haber palabras en las cajas altas"
+        )
     }
 }

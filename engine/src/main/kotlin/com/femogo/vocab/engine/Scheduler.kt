@@ -24,7 +24,7 @@ class Scheduler(
     fun buildQueue(
         catalog: List<Word>,
         cards: Map<Int, Card>,
-        now: Long,
+        turno: Int,
         size: Int,
         aciertoReciente: Float? = null
     ): List<Word> {
@@ -40,8 +40,8 @@ class Scheduler(
         }
 
         val vencidas = cards.values
-            .filter { it.dueAt <= now && !it.isNew }
-            .sortedWith(compareBy({ it.box }, { it.dueAt }))
+            .filter { it.dueTurn <= turno && !it.isNew }
+            .sortedWith(compareBy({ it.box }, { it.dueTurn }))
 
         val nuevasPorNivel = catalog
             .filter { cards[it.rank]?.isNew != false }
@@ -76,7 +76,7 @@ class Scheduler(
 
         añadir(
             cards.values
-                .sortedWith(compareBy({ leitner.isMastered(it) }, { it.dueAt }))
+                .sortedWith(compareBy({ leitner.isMastered(it) }, { it.dueTurn }))
                 .asSequence()
                 .map { it.rank }
         )
@@ -116,7 +116,7 @@ class Scheduler(
         return salida
     }
 
-    /** Cuántas palabras están vencidas ahora mismo. */
-    fun dueCount(cards: Map<Int, Card>, now: Long): Int =
-        cards.values.count { !it.isNew && it.dueAt <= now }
+    /** Cuántas palabras tocan ya. */
+    fun dueCount(cards: Map<Int, Card>, turno: Int): Int =
+        cards.values.count { !it.isNew && it.dueTurn <= turno }
 }

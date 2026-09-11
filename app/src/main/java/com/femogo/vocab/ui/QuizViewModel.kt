@@ -56,6 +56,9 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     private val cards = mutableMapOf<Int, Card>()
     private var optionCount = 4
 
+    /** Preguntas respondidas en total. Es el reloj del juego. */
+    private var turno = 0
+
     // Ventana corta de resultados. El planificador la usa para mezclar más
     // material difícil cuando se va sobrado, y menos cuando se atasca. Un
     // porcentaje de toda la vida no serviría: tardaría semanas en moverse.
@@ -76,6 +79,7 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
             cards.putAll(repo.cards())
             val guardado = settingsStore.flow.first()
             optionCount = guardado.optionCount
+            turno = guardado.turno
             ultimas.clear()
             guardado.ultimasRespuestas.forEach { ultimas.addLast(it == '1') }
 
@@ -104,12 +108,12 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun mostrarSiguiente() {
-        val word = cola.siguiente(catalog, cards, System.currentTimeMillis(), aciertoReciente)
+        val word = cola.siguiente(catalog, cards, turno, aciertoReciente)
         if (word == null) {
             _state.value = _state.value.copy(question = null, sinDiccionario = catalog.isEmpty())
             return
         }
-        val card = cards[word.rank] ?: leitner.newCard(word.rank, System.currentTimeMillis())
+        val card = cards[word.rank] ?: leitner.newCard(word.rank)
         _state.value = _state.value.copy(
             question = quizBuilder.build(
                 target = word,
@@ -128,9 +132,9 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
 
         val question = actual.question
         val acierto = chosen == question.correctIndex
-        val ahora = System.currentTimeMillis()
-        val card = cards[question.word.rank] ?: leitner.newCard(question.word.rank, ahora)
-        val actualizada = leitner.answer(card, acierto, ahora)
+        turno++
+        val card = cards[question.word.rank] ?: leitner.newCard(question.word.rank)
+        val actualizada = leitner.answer(card, acierto, turno)
         cards[question.word.rank] = actualizada
 
         // Lo fallado vuelve unas preguntas después, no dentro de diez minutos:
@@ -143,9 +147,11 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
 
         _state.value = actual.copy(chosenIndex = chosen)
         recalcularNivel()
+        val turnoActual = turno
         viewModelScope.launch {
-            repo.save(actualizada, ahora)
+            repo.save(actualizada)
             settingsStore.setUltimasRespuestas(instantanea)
+            settingsStore.setTurno(turnoActual)
         }
     }
 

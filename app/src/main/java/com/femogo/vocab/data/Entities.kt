@@ -54,31 +54,30 @@ data class WordEntity(
 /**
  * El progreso sobre una palabra. Vive en una tabla aparte del diccionario para
  * que reimportar o ampliar el vocabulario no borre lo aprendido.
+ *
+ * No se guarda ninguna fecha. [Card.dueTurn] cuenta preguntas respondidas, no
+ * tiempo: el juego va al ritmo de quien juega, y una semana sin abrirlo no
+ * cambia nada.
  */
 @Entity(tableName = "cards")
 data class CardEntity(
     @PrimaryKey val rank: Int,
     val box: Int,
-    val dueAt: Long,
+    val dueTurn: Int,
     val seen: Int,
     val correct: Int,
-    val streak: Int,
-    val lastSeenAt: Long,
-    /** Cuándo se respondió por primera vez. Dato informativo: nada lo usa para decidir. */
-    val introducedAt: Long
+    val streak: Int
 ) {
-    fun toDomain() = Card(rank, box, dueAt, seen, correct, streak, lastSeenAt)
+    fun toDomain() = Card(rank, box, dueTurn, seen, correct, streak)
 
     companion object {
-        fun from(card: Card, introducedAt: Long) = CardEntity(
+        fun from(card: Card) = CardEntity(
             rank = card.rank,
             box = card.box,
-            dueAt = card.dueAt,
+            dueTurn = card.dueTurn,
             seen = card.seen,
             correct = card.correct,
-            streak = card.streak,
-            lastSeenAt = card.lastSeenAt,
-            introducedAt = introducedAt
+            streak = card.streak
         )
     }
 }

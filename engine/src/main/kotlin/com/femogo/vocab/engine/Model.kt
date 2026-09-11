@@ -42,15 +42,20 @@ data class Word(
 /** En qué dirección se pregunta. */
 enum class Direction { EN_TO_ES, ES_TO_EN }
 
-/** Progreso del usuario sobre una palabra. */
+/**
+ * Progreso del usuario sobre una palabra.
+ *
+ * [dueTurn] es el número de pregunta a partir del cual vuelve a tocar, no una
+ * fecha. El juego no sabe qué día es: solo cuenta preguntas respondidas, así que
+ * una tarde de tres horas y una semana sin abrirlo son lo mismo para él.
+ */
 data class Card(
     val rank: Int,
     val box: Int = 1,
-    val dueAt: Long = 0L,
+    val dueTurn: Int = 0,
     val seen: Int = 0,
     val correct: Int = 0,
-    val streak: Int = 0,
-    val lastSeenAt: Long = 0L
+    val streak: Int = 0
 ) {
     val isNew: Boolean get() = seen == 0
     val accuracy: Double get() = if (seen == 0) 0.0 else correct.toDouble() / seen

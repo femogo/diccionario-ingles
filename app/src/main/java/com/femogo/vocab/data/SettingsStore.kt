@@ -24,7 +24,12 @@ data class Settings(
      * aplicación no reinicie el ajuste de dificultad: el juego es continuo y
      * cerrarlo no debería ser un corte.
      */
-    val ultimasRespuestas: String = ""
+    val ultimasRespuestas: String = "",
+    /**
+     * Preguntas respondidas en total. Hace de reloj del juego: el espaciado se
+     * mide en turnos, así que esto es lo único que avanza.
+     */
+    val turno: Int = 0
 )
 
 class SettingsStore(private val context: Context) {
@@ -33,7 +38,8 @@ class SettingsStore(private val context: Context) {
         Settings(
             optionCount = prefs[KEY_OPTIONS] ?: 4,
             dictionaryHash = prefs[KEY_DICT_HASH],
-            ultimasRespuestas = prefs[KEY_ULTIMAS] ?: ""
+            ultimasRespuestas = prefs[KEY_ULTIMAS] ?: "",
+            turno = prefs[KEY_TURNO] ?: 0
         )
     }
 
@@ -49,9 +55,14 @@ class SettingsStore(private val context: Context) {
         context.dataStore.edit { it[KEY_ULTIMAS] = valor }
     }
 
+    suspend fun setTurno(valor: Int) {
+        context.dataStore.edit { it[KEY_TURNO] = valor }
+    }
+
     private companion object {
         val KEY_OPTIONS = intPreferencesKey("options")
         val KEY_DICT_HASH = stringPreferencesKey("dict_hash")
         val KEY_ULTIMAS = stringPreferencesKey("ultimas_respuestas")
+        val KEY_TURNO = intPreferencesKey("turno")
     }
 }

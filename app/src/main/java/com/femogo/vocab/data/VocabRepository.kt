@@ -5,6 +5,7 @@ import com.femogo.vocab.engine.Card
 import com.femogo.vocab.engine.Word
 import com.femogo.vocab.engine.WordParser
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 
@@ -18,6 +19,7 @@ import java.io.InputStream
 class VocabRepository(private val context: Context) {
 
     private val db = AppDatabase.get(context)
+    private val ajustes = SettingsStore(context)
     private var cached: List<Word>? = null
 
     /** Carga el diccionario del asset la primera vez que se abre la aplicación. */
@@ -36,10 +38,11 @@ class VocabRepository(private val context: Context) {
         db.cardDao().all().associate { it.rank to it.toDomain() }
     }
 
-    suspend fun save(card: Card, now: Long) = withContext(Dispatchers.IO) {
-        // introducedAt se fija en la primera respuesta y no se vuelve a tocar.
-        val existing = db.cardDao().byRank(card.rank)
-        db.cardDao().upsert(CardEntity.from(card, existing?.introducedAt ?: now))
+    /** En qué turno va el juego, para saber qué palabras ya tocan. */
+    suspend fun turnoActual(): Int = ajustes.flow.first().turno
+
+    suspend fun save(card: Card) = withContext(Dispatchers.IO) {
+        db.cardDao().upsert(CardEntity.from(card))
     }
 
     /**

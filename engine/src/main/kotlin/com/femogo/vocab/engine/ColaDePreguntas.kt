@@ -7,16 +7,10 @@ import kotlin.random.Random
  *
  * Se rellena sola antes de agotarse, así que el juego no tiene tandas ni final.
  *
- * Su otro trabajo es el reintento inmediato, y es el que justifica que esto sea
- * una clase aparte. El espaciado de [Leitner] cuenta en minutos y días, lo que
- * da por supuesto un ritmo de estudio pausado. Jugando a tres segundos por
- * palabra, los diez minutos de la primera caja son doscientas preguntas de por
- * medio: medido en simulación, de sesenta palabras falladas solo diecisiete
- * volvían a aparecer, y la primera en la pregunta doscientos treinta y dos.
- *
- * Por eso el primer reintento se mide en preguntas y no en tiempo. Lo fallado
- * vuelve una docena de preguntas después, se juegue rápido o despacio. El
- * vencimiento por reloj sigue ahí como red para cuando se cierra la aplicación.
+ * El reintento devuelve lo recién fallado a la propia cola, unas preguntas más
+ * adelante. Es más corto que el intervalo de la primera caja y sirve para que
+ * fallar tenga consecuencia inmediata sin repetir la palabra a continuación,
+ * que sería contestar de memoria.
  */
 class ColaDePreguntas(
     private val scheduler: Scheduler,
@@ -33,10 +27,10 @@ class ColaDePreguntas(
     fun siguiente(
         catalog: List<Word>,
         cards: Map<Int, Card>,
-        now: Long,
+        turno: Int,
         aciertoReciente: Float?
     ): Word? {
-        if (cola.size <= rellenarBajo) rellenar(catalog, cards, now, aciertoReciente)
+        if (cola.size <= rellenarBajo) rellenar(catalog, cards, turno, aciertoReciente)
         return cola.removeFirstOrNull()
     }
 
@@ -55,11 +49,11 @@ class ColaDePreguntas(
     private fun rellenar(
         catalog: List<Word>,
         cards: Map<Int, Card>,
-        now: Long,
+        turno: Int,
         aciertoReciente: Float?
     ) {
         val yaEnCola = cola.map { it.rank }.toSet()
-        scheduler.buildQueue(catalog, cards, now, tamaño, aciertoReciente)
+        scheduler.buildQueue(catalog, cards, turno, tamaño, aciertoReciente)
             .filter { it.rank !in yaEnCola }
             .forEach { cola.addLast(it) }
     }
