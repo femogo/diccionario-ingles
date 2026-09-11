@@ -55,6 +55,48 @@ class SchedulerTest {
     }
 
     @Test
+    fun `las novedades no salen agrupadas por nivel`() {
+        // Diez palabras de A1 seguidas y luego diez de A2 se nota al jugar.
+        val variado = Cefr.entries.flatMapIndexed { i, cefr ->
+            (1..200).map { word(rank = i * 200 + it, cefr = cefr) }
+        }
+        val cola = scheduler.buildQueue(variado, emptyMap(), now, size = 30)
+        val niveles = cola.map { it.cefr }
+
+        val rachaMax = niveles.fold(Triple(0, 0, null as Cefr?)) { (max, actual, previo), cefr ->
+            val seguidas = if (cefr == previo) actual + 1 else 1
+            Triple(maxOf(max, seguidas), seguidas, cefr)
+        }.first
+
+        println("secuencia de niveles: " + niveles.joinToString(" "))
+        println("racha máxima del mismo nivel: $rachaMax")
+        assertTrue(
+            rachaMax <= 12,
+            "racha de $rachaMax palabras seguidas del mismo nivel en una cola de ${cola.size}"
+        )
+        assertTrue(niveles.toSet().size >= 2, "y tiene que haber más de un nivel")
+    }
+
+    @Test
+    fun `un nivel con una sola palabra asignada no cae siempre al final`() {
+        val variado = Cefr.entries.flatMapIndexed { i, cefr ->
+            (1..200).map { word(rank = i * 200 + it, cefr = cefr) }
+        }
+        val cola = scheduler.buildQueue(variado, emptyMap(), now, size = 30)
+        val escasos = cola.map { it.cefr }
+            .groupingBy { it }.eachCount()
+            .filterValues { it == 1 }.keys
+
+        escasos.forEach { cefr ->
+            val posicion = cola.indexOfFirst { it.cefr == cefr }
+            assertTrue(
+                posicion < cola.size - 1,
+                "$cefr aporta una sola palabra y quedó en la última posición"
+            )
+        }
+    }
+
+    @Test
     fun `reparte las novedades entre niveles en vez de agotar el primero`() {
         val variado = Cefr.entries.flatMapIndexed { i, cefr ->
             (1..50).map { word(rank = i * 50 + it, cefr = cefr) }

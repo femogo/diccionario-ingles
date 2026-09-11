@@ -56,9 +56,20 @@ class Scheduler(
         )
 
         // Dentro de cada nivel, por frecuencia de uso: lo más común primero.
+        //
+        // Entre niveles se entrelazan en proporción a su cuota, en vez de ir uno
+        // detrás de otro. Recorrer el reparto sin más sacaba diez palabras de A1
+        // seguidas y luego diez de A2, que es exactamente lo que se nota al
+        // jugar. Cada palabra recibe una posición relativa dentro de la cuota de
+        // su nivel, y el orden final sale de ordenar por esa posición: un nivel
+        // con una sola palabra la coloca en mitad de la tanda en lugar de
+        // amontonarla al final.
         val nuevas = reparto.flatMap { (cefr, cuantas) ->
-            nuevasPorNivel[cefr].orEmpty().sortedBy { it.rank }.take(cuantas)
-        }
+            nuevasPorNivel[cefr].orEmpty()
+                .sortedBy { it.rank }
+                .take(cuantas)
+                .mapIndexed { i, palabra -> (i + 0.5f) / cuantas to palabra }
+        }.sortedBy { it.first }.map { it.second }
         añadir(nuevas.asSequence().map { it.rank }, tope = cupoNuevas)
 
         añadir(vencidas.asSequence().map { it.rank })
