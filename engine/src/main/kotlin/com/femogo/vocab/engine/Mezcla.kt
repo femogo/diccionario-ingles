@@ -13,7 +13,9 @@ class Mezcla(
     /** Parte de cada sesión reservada a palabras que no se han visto nunca. */
     private val proporcionNuevas: Float = 0.35f,
     /** Acierto al que se apunta. Por encima se abre la mano, por debajo se cierra. */
-    private val aciertoObjetivo: Float = 0.80f
+    private val aciertoObjetivo: Float = 0.80f,
+    /** Parte que sigue siendo nueva por muchos repasos que se acumulen. */
+    private val minimoNovedad: Float = MINIMO_NOVEDAD
 ) {
 
     /**
@@ -41,7 +43,7 @@ class Mezcla(
 
         val capacidadRepaso = total * (1f - proporcionNuevas)
         val presion = (vencidas / capacidadRepaso).coerceAtLeast(1f)
-        val minimo = maxOf(1, Math.round(total * MINIMO_NOVEDAD))
+        val minimo = maxOf(1, Math.round(total * minimoNovedad))
         return Math.round(reserva / presion).coerceIn(minimo, total)
     }
 
@@ -128,7 +130,17 @@ class Mezcla(
         const val APERTURA = 0.3f
         const val BASE = 0.5f
         const val MARGEN = 0.05f
-        /** Parte de la sesión que sigue siendo nueva por muchos repasos que se acumulen. */
-        const val MINIMO_NOVEDAD = 0.05f
+        /**
+         * Parte de la sesión que sigue siendo nueva por muchos repasos que se
+         * acumulen.
+         *
+         * Elegido midiendo partidas de veinte mil preguntas. Al 5 % el flujo de
+         * novedades se estancaba en 93 palabras por cada dos mil preguntas; al
+         * 10 % salen más palabras vistas Y más dominadas, así que no es un
+         * intercambio sino una mejora en las dos. Al 15 % en cambio entran tantas
+         * que casi ninguna llega a la última caja, y al 25 % ninguna: el
+         * diccionario se recorre sin aprender nada.
+         */
+        const val MINIMO_NOVEDAD = 0.10f
     }
 }

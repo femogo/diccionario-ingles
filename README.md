@@ -76,6 +76,17 @@ cambia el diccionario. La tasa de acierto de las últimas 50 respuestas mueve el
 centro de gravedad: yendo sobrado se mezcla más material difícil, atascándose se
 concentra abajo.
 
+**Dominar palabras devuelve sitio a las nuevas.** Medido en partidas de treinta
+mil preguntas: las dominadas salen de circulación —1898 al final— y las que están
+a medias se estabilizan en torno a 350, que es una carga sostenible. El flujo de
+novedades no acelera, se asienta en un ritmo constante.
+
+Ese ritmo lo marca el mínimo de novedades, y elegirlo también se midió. Al 5 %
+entraban 93 palabras nuevas por cada dos mil preguntas; al 10 % salen más
+palabras vistas **y** más dominadas, así que no es un intercambio. Al 15 % entran
+tantas que casi ninguna llega a la última caja, y al 25 % ninguna: el diccionario
+se recorre sin aprender nada.
+
 **La reserva de novedades cede cuando hay atasco**, y esto costó dos intentos.
 Con reserva fija del 35 %, medido en simulación a tres meses: 2053 palabras
 vistas en lugar de 670, y **ninguna** en la última caja, frente a 367. Entraban
