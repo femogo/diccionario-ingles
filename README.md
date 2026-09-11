@@ -165,6 +165,35 @@ instalada". No es un secreto: la clave de depuración usa la contraseña "androi
 por diseño y no da acceso a nada. Publicar en Play Store sí exigiría una clave
 de firma propia, esa fuera del repositorio.
 
+## Módulos
+
+Cada módulo es un juego con su propio vocabulario, su propio progreso y su
+propia barra de nivel. Vienen dos de serie: las palabras más frecuentes del
+inglés y los cien verbos compuestos más usados. En la pantalla de juego se
+elige a cuál se juega, y las estadísticas los muestran por separado.
+
+**Los módulos son datos, no código.** La aplicación lee `modulos.json`, y lo que
+aparezca allí lo instala. Añadir un idioma entero es publicar dos archivos:
+
+```json
+{
+  "id": "frances",
+  "nombre": "Francés",
+  "descripcion": "Vocabulario francés por frecuencia",
+  "archivo": "modulos/frances.txt",
+  "version": 1
+}
+```
+
+y el `modulos/frances.txt` con el mismo formato de siempre. Quien tenga la
+aplicación instalada lo recibe al pulsar Actualizar. **Nadie reinstala nada.**
+
+Para publicar contenido nuevo de un módulo que ya existe, basta subir su
+`version` en el índice: la aplicación compara y solo baja lo que ha cambiado.
+
+El progreso se guarda por módulo y por posición en la lista de frecuencia, así
+que actualizar el contenido no cuesta lo aprendido.
+
 ## El diccionario
 
 6780 palabras, ordenadas por frecuencia real de uso. Se arman cruzando dos
@@ -185,10 +214,9 @@ frecuencia. Es una aproximación, no una medida.
 
 El botón de Ajustes busca las dos cosas que pueden cambiar.
 
-**Las palabras**: descarga `words.txt` del repositorio y lo instala si ha
-cambiado, comparando una huella del contenido para no reinstalar lo mismo. El
-progreso no se toca: vive en otra tabla y se reenlaza por posición en la lista
-de frecuencia.
+**Los módulos**: descarga el índice publicado e instala lo que haya cambiado,
+incluidos módulos que no existían cuando se instaló la aplicación. El progreso
+no se toca: vive en otra tabla y se reenlaza por módulo y posición.
 
 **La propia aplicación**: consulta la última publicación, y si su etiqueta es
 mayor que el `versionCode` instalado, descarga el APK y abre el instalador.

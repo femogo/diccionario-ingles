@@ -103,12 +103,13 @@ private fun App(
                 state = quizState,
                 onAnswer = quizVm::answer,
                 onNext = quizVm::next,
+                onModulo = quizVm::cambiarModulo,
                 modifier = Modifier.padding(padding)
             )
             Seccion.PROGRESO -> ProgresoScreen(progresoState, Modifier.padding(padding))
             Seccion.AJUSTES -> AjustesScreen(
                 vm = ajustesVm,
-                onDiccionarioActualizado = quizVm::recargarCatalogo,
+                onDiccionarioActualizado = quizVm::recargar,
                 modifier = Modifier.padding(padding)
             )
         }

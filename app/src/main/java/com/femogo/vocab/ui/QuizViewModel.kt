@@ -4,13 +4,14 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.femogo.vocab.VocabApplication
+import com.femogo.vocab.data.Modulo
 import com.femogo.vocab.engine.Card
 import com.femogo.vocab.engine.Cefr
 import com.femogo.vocab.engine.ColaDePreguntas
 import com.femogo.vocab.engine.DirectionMode
+import com.femogo.vocab.engine.Leitner
 import com.femogo.vocab.engine.NivelProgreso
 import com.femogo.vocab.engine.ProgresoNivel
-import com.femogo.vocab.engine.Leitner
 import com.femogo.vocab.engine.Question
 import com.femogo.vocab.engine.QuizBuilder
 import com.femogo.vocab.engine.Scheduler
@@ -28,7 +29,9 @@ data class QuizUiState(
     val chosenIndex: Int? = null,
     val sinDiccionario: Boolean = false,
     val niveles: List<NivelProgreso> = emptyList(),
-    val nivelAlcanzado: Cefr = Cefr.A1
+    val nivelAlcanzado: Cefr = Cefr.A1,
+    val modulos: List<Modulo> = emptyList(),
+    val moduloActivo: String = ""
 ) {
     val answered: Boolean get() = chosenIndex != null
     val wasCorrect: Boolean get() = chosenIndex != null && chosenIndex == question?.correctIndex
@@ -37,17 +40,21 @@ data class QuizUiState(
 /**
  * El juego no tiene tandas: la cola se rellena sola antes de agotarse, así que
  * nunca aparece una pantalla de "sesión terminada" ni un final al que llegar.
+ *
+ * Cada módulo es una partida independiente, con su propio avance y su propia
+ * cola. Cambiar de módulo no mezcla nada: se guarda dónde iba el anterior y se
+ * retoma el nuevo donde se dejó.
  */
 class QuizViewModel(app: Application) : AndroidViewModel(app) {
 
-    private val repo = (app as VocabApplication).repository
+    private val biblioteca = (app as VocabApplication).biblioteca
     private val settingsStore = (app as VocabApplication).settings
 
     private val leitner = Leitner()
     private val quizBuilder = QuizBuilder()
     private val scheduler = Scheduler(leitner)
     private val progresoNivel = ProgresoNivel(leitner)
-    private val cola = ColaDePreguntas(scheduler)
+    private var cola = ColaDePreguntas(scheduler)
 
     private val _state = MutableStateFlow(QuizUiState())
     val state: StateFlow<QuizUiState> = _state.asStateFlow()
@@ -55,13 +62,13 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     private var catalog: List<Word> = emptyList()
     private val cards = mutableMapOf<Int, Card>()
     private var optionCount = 4
+    private var modulo = ""
 
-    /** Preguntas respondidas en total. Es el reloj del juego. */
+    /** Preguntas respondidas en este módulo. Es el reloj del juego. */
     private var turno = 0
 
     // Ventana corta de resultados. El planificador la usa para mezclar más
-    // material difícil cuando se va sobrado, y menos cuando se atasca. Un
-    // porcentaje de toda la vida no serviría: tardaría semanas en moverse.
+    // material difícil cuando se va sobrado, y menos cuando se atasca.
     private val ultimas = ArrayDeque<Boolean>()
 
     private val aciertoReciente: Float?
@@ -73,38 +80,61 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     fun arrancar() {
         viewModelScope.launch {
             _state.value = QuizUiState(loading = true)
-            repo.ensureSeeded()
-            catalog = repo.catalog()
-            cards.clear()
-            cards.putAll(repo.cards())
-            val guardado = settingsStore.flow.first()
-            optionCount = guardado.optionCount
-            turno = guardado.turno
-            ultimas.clear()
-            guardado.ultimasRespuestas.forEach { ultimas.addLast(it == '1') }
+            biblioteca.prepararSiHaceFalta()
+            val modulos = biblioteca.modulos()
+            val ajustes = settingsStore.flow.first()
+            optionCount = ajustes.optionCount
 
-            if (catalog.isEmpty()) {
+            val elegido = modulos.firstOrNull { it.id == ajustes.moduloActivo }
+                ?: modulos.firstOrNull()
+            if (elegido == null) {
                 _state.value = QuizUiState(loading = false, sinDiccionario = true)
                 return@launch
             }
-            cola.vaciar()
-            _state.value = QuizUiState(loading = false)
-            recalcularNivel()
-            mostrarSiguiente()
+            _state.value = QuizUiState(loading = false, modulos = modulos)
+            cargarModulo(elegido.id)
         }
     }
 
-    /** Se llama al recargar el diccionario, para no seguir preguntando lo viejo. */
-    fun recargarCatalogo() {
+    fun cambiarModulo(id: String) {
+        if (id == modulo) return
         viewModelScope.launch {
-            catalog = repo.catalog()
-            cola.vaciar()
-            if (catalog.isNotEmpty()) {
-                _state.value = _state.value.copy(sinDiccionario = false)
-                recalcularNivel()
-                mostrarSiguiente()
-            }
+            settingsStore.setModuloActivo(id)
+            cargarModulo(id)
         }
+    }
+
+    /** Se llama al actualizar módulos, para no seguir preguntando lo viejo. */
+    fun recargar() {
+        viewModelScope.launch {
+            val modulos = biblioteca.modulos()
+            _state.value = _state.value.copy(modulos = modulos)
+            if (modulos.any { it.id == modulo }) cargarModulo(modulo)
+            else modulos.firstOrNull()?.let { cargarModulo(it.id) }
+        }
+    }
+
+    private suspend fun cargarModulo(id: String) {
+        modulo = id
+        catalog = biblioteca.catalogo(id)
+        cards.clear()
+        cards.putAll(biblioteca.cards(id))
+
+        val avance = settingsStore.avanceDe(id)
+        turno = avance.turno
+        ultimas.clear()
+        avance.ultimasRespuestas.forEach { ultimas.addLast(it == '1') }
+
+        cola = ColaDePreguntas(scheduler)
+        _state.value = _state.value.copy(
+            moduloActivo = id,
+            sinDiccionario = catalog.isEmpty(),
+            chosenIndex = null,
+            question = null
+        )
+        if (catalog.isEmpty()) return
+        recalcularNivel()
+        mostrarSiguiente()
     }
 
     private fun mostrarSiguiente() {
@@ -147,11 +177,12 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
 
         _state.value = actual.copy(chosenIndex = chosen)
         recalcularNivel()
+
+        val moduloActual = modulo
         val turnoActual = turno
         viewModelScope.launch {
-            repo.save(actualizada)
-            settingsStore.setUltimasRespuestas(instantanea)
-            settingsStore.setTurno(turnoActual)
+            biblioteca.guardar(moduloActual, actualizada)
+            settingsStore.guardarAvance(moduloActual, turnoActual, instantanea)
         }
     }
 
@@ -168,7 +199,10 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     private fun recalcularNivel() {
         val niveles = progresoNivel.porNivel(catalog, cards)
         _state.value = _state.value.copy(
-            niveles = niveles,
+            // Solo los niveles que el módulo tiene. Los verbos compuestos no
+            // llegan a C1, y pintar ese tramo siempre en rojo sugeriría un
+            // atraso que no existe.
+            niveles = niveles.filter { it.total > 0 },
             nivelAlcanzado = progresoNivel.nivelAlcanzado(niveles)
         )
     }

@@ -45,7 +45,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.femogo.vocab.VocabApplication
 import com.femogo.vocab.data.AppUpdater
-import com.femogo.vocab.data.DictionaryUpdater
+import com.femogo.vocab.data.Biblioteca
+import com.femogo.vocab.data.Modulo
 import com.femogo.vocab.data.Settings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -57,8 +58,7 @@ import kotlinx.coroutines.launch
 
 class AjustesViewModel(app: Application) : AndroidViewModel(app) {
     private val store = (app as VocabApplication).settings
-    private val repo = (app as VocabApplication).repository
-    private val updater = DictionaryUpdater(app, repo)
+    private val biblioteca = (app as VocabApplication).biblioteca
     private val appUpdater = AppUpdater(app)
 
     val settings: StateFlow<Settings> =
@@ -76,21 +76,28 @@ class AjustesViewModel(app: Application) : AndroidViewModel(app) {
     private val _permisoPendiente = MutableStateFlow(false)
     val permisoPendiente: StateFlow<Boolean> = _permisoPendiente.asStateFlow()
 
-    private val _palabras = MutableStateFlow(0)
-    val palabras: StateFlow<Int> = _palabras.asStateFlow()
+    private val _modulos = MutableStateFlow<List<Modulo>>(emptyList())
+    val modulos: StateFlow<List<Modulo>> = _modulos.asStateFlow()
 
-    init { contarPalabras() }
+    init { cargarModulos() }
 
     fun setOptionCount(v: Int) = viewModelScope.launch { store.setOptionCount(v) }
 
-    private fun contarPalabras() {
-        viewModelScope.launch { _palabras.value = repo.catalog().size }
+    private fun cargarModulos() {
+        viewModelScope.launch {
+            biblioteca.prepararSiHaceFalta()
+            _modulos.value = biblioteca.modulos()
+        }
     }
 
     /**
-     * Busca novedades de las dos cosas que pueden cambiar: las palabras y la
-     * propia aplicación. [alTerminar] avisa a la pantalla de juego para que deje
-     * de preguntar por el catálogo viejo.
+     * Busca novedades de las dos cosas que pueden cambiar: los módulos de juego
+     * y la propia aplicación. [alTerminar] avisa a la pantalla de juego para que
+     * deje de preguntar por el contenido viejo.
+     *
+     * Los módulos llegan de un índice publicado, así que aquí también aparecen
+     * los que no existían cuando se instaló la aplicación: un idioma nuevo entra
+     * por esta vía, sin compilar nada.
      *
      * El último paso no puede ser automático. Android solo permite instalar sin
      * confirmación a aplicaciones del sistema, así que aquí se descarga todo y
@@ -102,49 +109,56 @@ class AjustesViewModel(app: Application) : AndroidViewModel(app) {
             _actualizando.value = true
             val resumen = StringBuilder()
 
-            _paso.value = "Buscando palabras nuevas…"
-            val huella = store.flow.first().dictionaryHash
-            val (resultado, nueva) = updater.actualizar(huella)
-            when (resultado) {
-                is DictionaryUpdater.Resultado.AlDia ->
-                    resumen.append("El diccionario ya está al día.")
-                is DictionaryUpdater.Resultado.Instalado -> {
-                    nueva?.let { store.setDictionaryHash(it) }
-                    contarPalabras()
+            _paso.value = "Buscando módulos…"
+            when (val r = biblioteca.actualizar()) {
+                is Biblioteca.Resultado.AlDia ->
+                    resumen.append("Los módulos ya están al día.")
+                is Biblioteca.Resultado.Instalados -> {
+                    r.novedades.forEach { n ->
+                        resumen.append(
+                            if (n.esNuevo) "Módulo nuevo: ${n.nombre}, ${n.palabras} palabras.
+"
+                            else "${n.nombre} actualizado: ${n.palabras} palabras.
+"
+                        )
+                    }
+                    cargarModulos()
                     alTerminar()
-                    resumen.append("Instaladas ${resultado.palabras} palabras.")
                 }
-                is DictionaryUpdater.Resultado.Fallo ->
-                    resumen.append(resultado.motivo)
+                is Biblioteca.Resultado.Fallo -> resumen.append(r.motivo)
             }
 
             _paso.value = "Buscando versiones de la aplicación…"
             val disponible = appUpdater.comprobar()
             if (disponible == null) {
-                resumen.append("\nLa aplicación está en su última versión.")
+                resumen.append("
+La aplicación está en su última versión.")
             } else {
                 val (version, url) = disponible
                 if (!appUpdater.puedeInstalar()) {
                     _permisoPendiente.value = true
-                    resumen.append("\nHay una versión nueva (0.$version), pero falta " +
+                    resumen.append("
+Hay una versión nueva (0.$version), pero falta " +
                         "darle permiso para instalar aplicaciones.")
                 } else {
                     _paso.value = "Descargando la versión 0.$version…"
                     appUpdater.descargar(url)
                         .onSuccess {
-                            resumen.append("\nVersión 0.$version descargada. " +
+                            resumen.append("
+Versión 0.$version descargada. " +
                                 "Confirma la instalación cuando te lo pida.")
                             appUpdater.instalar(it)
                         }
                         .onFailure {
-                            resumen.append("\nNo se ha podido descargar la versión 0.$version: " +
+                            resumen.append("
+No se ha podido descargar la versión 0.$version: " +
                                 (it.message ?: "fallo de red"))
                         }
                 }
             }
 
             _paso.value = ""
-            _mensaje.value = resumen.toString()
+            _mensaje.value = resumen.toString().trim()
             _actualizando.value = false
         }
     }
@@ -158,8 +172,8 @@ class AjustesViewModel(app: Application) : AndroidViewModel(app) {
 
     fun reiniciarProgreso() {
         viewModelScope.launch {
-            repo.resetProgress()
-            _mensaje.value = "Progreso borrado"
+            biblioteca.borrarTodoElProgreso()
+            _mensaje.value = "Progreso borrado en todos los módulos"
         }
     }
 
@@ -177,7 +191,7 @@ fun AjustesScreen(
     val actualizando by vm.actualizando.collectAsState()
     val paso by vm.paso.collectAsState()
     val permisoPendiente by vm.permisoPendiente.collectAsState()
-    val palabras by vm.palabras.collectAsState()
+    val modulos by vm.modulos.collectAsState()
     var confirmarReinicio by remember { mutableStateOf(false) }
 
     BoxWithConstraints(modifier.fillMaxSize()) {
@@ -208,12 +222,38 @@ fun AjustesScreen(
             )
 
             Spacer(Modifier.height(36.dp))
-            Text("Actualizaciones", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(4.dp))
+            Text("Módulos instalados", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            modulos.forEach { modulo ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 5.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(modulo.nombre, style = MaterialTheme.typography.bodyLarge)
+                        if (modulo.descripcion.isNotBlank()) {
+                            Text(
+                                modulo.descripcion,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Text(
+                        "${modulo.palabras}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Spacer(Modifier.height(12.dp))
             Text(
-                "$palabras palabras instaladas. Busca palabras nuevas y versiones " +
-                    "nuevas de la aplicación. Tu progreso no se toca. La instalación " +
-                    "la confirmas tú: Android no deja que una aplicación se instale sola.",
+                "Al actualizar se buscan módulos nuevos, contenido nuevo de los que " +
+                    "ya tienes, y versiones nuevas de la aplicación. Tu progreso no se " +
+                    "toca. La instalación la confirmas tú: Android no deja que una " +
+                    "aplicación se instale sola.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -292,7 +332,7 @@ fun AjustesScreen(
         AlertDialog(
             onDismissRequest = { confirmarReinicio = false },
             title = { Text("¿Borrar el progreso?") },
-            text = { Text("Se pierden las cajas y las estadísticas de todas las palabras. No se puede deshacer.") },
+            text = { Text("Se pierden las cajas y las estadísticas de todos los módulos. No se puede deshacer.") },
             shape = RoundedCornerShape(24.dp),
             confirmButton = {
                 TextButton(onClick = {

@@ -8,12 +8,31 @@ import com.femogo.vocab.engine.Pos
 import com.femogo.vocab.engine.Word
 
 /**
- * El diccionario. Se rellena desde el asset la primera vez y se puede sustituir
- * por completo cuando el usuario importa una versión ampliada.
+ * Un juego con su propio vocabulario y su propio progreso: las palabras
+ * frecuentes, los verbos compuestos, o cualquier otro que se publique después.
+ *
+ * Los módulos son datos, no código. Añadir uno nuevo es publicar un archivo y
+ * nombrarlo en el índice; la aplicación instalada lo encuentra al actualizar y
+ * no hace falta compilar nada.
  */
-@Entity(tableName = "words")
+@Entity(tableName = "modulos")
+data class ModuloEntity(
+    @PrimaryKey val id: String,
+    val nombre: String,
+    val descripcion: String,
+    /** Versión publicada del contenido, para saber si hay que volver a bajarlo. */
+    val version: Int,
+    val palabras: Int
+)
+
+/**
+ * El diccionario. La clave es el módulo más la posición en su lista de
+ * frecuencia, así que dos módulos pueden usar los mismos números sin pisarse.
+ */
+@Entity(tableName = "words", primaryKeys = ["modulo", "rank"])
 data class WordEntity(
-    @PrimaryKey val rank: Int,
+    val modulo: String,
+    val rank: Int,
     val en: String,
     val lemma: String,
     val pos: String,
@@ -38,7 +57,8 @@ data class WordEntity(
     }
 
     companion object {
-        fun from(w: Word) = WordEntity(
+        fun from(w: Word, modulo: String) = WordEntity(
+            modulo = modulo,
             rank = w.rank,
             en = w.en,
             lemma = w.lemma,
@@ -59,9 +79,10 @@ data class WordEntity(
  * tiempo: el juego va al ritmo de quien juega, y una semana sin abrirlo no
  * cambia nada.
  */
-@Entity(tableName = "cards")
+@Entity(tableName = "cards", primaryKeys = ["modulo", "rank"])
 data class CardEntity(
-    @PrimaryKey val rank: Int,
+    val modulo: String,
+    val rank: Int,
     val box: Int,
     val dueTurn: Int,
     val seen: Int,
@@ -71,7 +92,8 @@ data class CardEntity(
     fun toDomain() = Card(rank, box, dueTurn, seen, correct, streak)
 
     companion object {
-        fun from(card: Card) = CardEntity(
+        fun from(card: Card, modulo: String) = CardEntity(
+            modulo = modulo,
             rank = card.rank,
             box = card.box,
             dueTurn = card.dueTurn,

@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.femogo.vocab.data.Modulo
 import com.femogo.vocab.engine.NivelProgreso
 import com.femogo.vocab.engine.Question
 import com.femogo.vocab.ui.theme.Acierto
@@ -52,6 +53,7 @@ fun QuizScreen(
     state: QuizUiState,
     onAnswer: (Int) -> Unit,
     onNext: () -> Unit,
+    onModulo: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(modifier.fillMaxSize()) {
@@ -70,6 +72,7 @@ fun QuizScreen(
                     .padding(horizontal = medida.margen, vertical = 14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                SelectorModulo(state.modulos, state.moduloActivo, onModulo)
                 BarraNivel(state.niveles, state.nivelAlcanzado.name, medida)
 
                 // La palabra se queda con todo el alto sobrante en vez de
@@ -120,6 +123,61 @@ private fun medidasPara(ancho: Dp, alto: Dp): Medidas {
         alto >= 800.dp -> Medidas(76.sp, 24.sp, 18.sp, 16.sp, 80.dp, 30.dp, columnas)
         alto >= 620.dp -> Medidas(56.sp, 20.sp, 16.sp, 14.sp, 68.dp, 22.dp, columnas)
         else -> Medidas(40.sp, 17.sp, 14.sp, 13.sp, 54.dp, 18.dp, columnas)
+    }
+}
+
+/**
+ * A qué se juega. Cada módulo lleva su propio avance, así que cambiar aquí es
+ * cambiar de partida, no filtrar la misma.
+ *
+ * Con un solo módulo instalado no se pinta nada: una fila de una sola pestaña
+ * ocupa sitio y no ofrece ninguna elección.
+ */
+@Composable
+private fun SelectorModulo(
+    modulos: List<Modulo>,
+    activo: String,
+    onModulo: (String) -> Unit
+) {
+    if (modulos.size < 2) return
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        modulos.forEach { modulo ->
+            val seleccionado = modulo.id == activo
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 44.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(
+                        if (seleccionado) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surface
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = if (seleccionado) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .clickable { onModulo(modulo.id) }
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = modulo.nombre,
+                    fontSize = 14.sp,
+                    fontWeight = if (seleccionado) FontWeight.Black else FontWeight.Bold,
+                    color = if (seleccionado) MaterialTheme.colorScheme.onPrimaryContainer
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1
+                )
+            }
+        }
     }
 }
 
@@ -357,10 +415,10 @@ private fun BotonSiguiente(onNext: () -> Unit, medida: Medidas) {
 @Composable
 private fun SinDiccionario() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("No hay diccionario", style = MaterialTheme.typography.titleLarge)
+        Text("No hay nada instalado", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(8.dp))
         Text(
-            "Ve a Ajustes y actualiza el diccionario.",
+            "Ve a Ajustes y busca actualizaciones.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

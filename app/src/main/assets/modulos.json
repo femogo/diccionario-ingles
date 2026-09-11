@@ -1,0 +1,19 @@
+{
+  "formato": 1,
+  "modulos": [
+    {
+      "id": "vocabulario",
+      "nombre": "Vocabulario",
+      "descripcion": "Las palabras más frecuentes del inglés, por orden de uso",
+      "archivo": "modulos/vocabulario.txt",
+      "version": 1
+    },
+    {
+      "id": "phrasal",
+      "nombre": "Phrasal verbs",
+      "descripcion": "Los 100 verbos compuestos más usados",
+      "archivo": "modulos/phrasal.txt",
+      "version": 1
+    }
+  ]
+}

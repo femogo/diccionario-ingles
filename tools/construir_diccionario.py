@@ -16,7 +16,8 @@ import re, sys, collections, pathlib, glob
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 FUENTE = RAIZ / "tools" / "fuente" / "en-es.xml"
-DESTINO = RAIZ / "app" / "src" / "main" / "assets" / "words.txt"
+DESTINO = RAIZ / "modulos" / "vocabulario.txt"
+COPIA_EN_APP = RAIZ / "app" / "src" / "main" / "assets" / "modulos" / "vocabulario.txt"
 
 POS = {
     "n": "noun", "v": "verb", "adj": "adj", "adv": "adv", "prep": "prep",
@@ -160,6 +161,9 @@ with DESTINO.open("w", encoding="utf-8") as fh:
 print(f"de la fuente bilingue  {automaticas}")
 print(f"revisadas a mano       {revisadas}")
 print(f"tras plegar por lema   {len(final)}")
-print(f"escrito {DESTINO.relative_to(RAIZ)}")
+COPIA_EN_APP.parent.mkdir(parents=True, exist_ok=True)
+COPIA_EN_APP.write_text(DESTINO.read_text(encoding="utf-8"), encoding="utf-8")
+print(f"escrito {DESTINO.relative_to(RAIZ)} y copiado al APK")
+print("recuerda subir la version del modulo en modulos.json")
 niveles = collections.Counter(f[6] for f in final)
 print("por nivel:", dict(sorted(niveles.items())))

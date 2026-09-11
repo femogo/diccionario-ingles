@@ -1,0 +1,102 @@
+# Phrasal verbs más usados del inglés.
+# Formato: rank|en|lemma|pos|es|es_alt|cefr|hint
+1|go on|go on|phrasal|continuar|seguir;pasar|A2|keep happening
+2|pick up|pick up|phrasal|recoger|levantar;aprender|A2|lift from the floor
+3|find out|find out|phrasal|averiguar|descubrir;enterarse|A2|discover information
+4|come back|come back|phrasal|volver|regresar|A1|return to a place
+5|come on|come on|phrasal|vamos|venga;date prisa|A1|urging someone
+6|go out|go out|phrasal|salir|-|A1|leave the house
+7|get out|get out|phrasal|salir|largarse;sacar|A2|leave a place
+8|take out|take out|phrasal|sacar|quitar;llevar fuera|A2|remove from inside
+9|look for|look for|phrasal|buscar|-|A1|try to find
+10|get up|get up|phrasal|levantarse|-|A1|leave the bed
+11|come up|come up|phrasal|surgir|acercarse;aparecer|B1|arise unexpectedly
+12|go back|go back|phrasal|volver|regresar|A1|return
+13|look at|look at|phrasal|mirar|observar|A1|direct your eyes
+14|turn on|turn on|phrasal|encender|-|A1|start a device
+15|turn off|turn off|phrasal|apagar|-|A1|stop a device
+16|give up|give up|phrasal|rendirse|abandonar;dejar|A2|stop trying
+17|put on|put on|phrasal|ponerse|-|A1|dress yourself
+18|take off|take off|phrasal|quitarse|despegar|A2|remove clothing
+19|wake up|wake up|phrasal|despertarse|-|A1|stop sleeping
+20|sit down|sit down|phrasal|sentarse|-|A1|take a seat
+21|stand up|stand up|phrasal|levantarse|ponerse de pie|A1|rise to your feet
+22|get in|get in|phrasal|entrar|subir|A2|enter a car or place
+23|get on|get on|phrasal|subir|llevarse bien|A2|board a vehicle
+24|get off|get off|phrasal|bajar|bajarse|A2|leave a vehicle
+25|look after|look after|phrasal|cuidar|ocuparse de|A2|take care of
+26|run out of|run out of|phrasal|quedarse sin|agotar|B1|have no more left
+27|put off|put off|phrasal|posponer|aplazar|B1|delay to later
+28|carry on|carry on|phrasal|continuar|seguir|B1|keep going
+29|bring up|bring up|phrasal|criar|mencionar;sacar|B1|raise a child or a topic
+30|call off|call off|phrasal|cancelar|suspender|B1|cancel an event
+31|check in|check in|phrasal|registrarse|facturar|A2|arrive at a hotel or airport
+32|check out|check out|phrasal|echar un vistazo|dejar el hotel|A2|look at something
+33|break down|break down|phrasal|averiarse|estropearse;derrumbarse|B1|stop working
+34|break up|break up|phrasal|romper|separarse|B1|end a relationship
+35|calm down|calm down|phrasal|calmarse|tranquilizarse|A2|become less upset
+36|catch up|catch up|phrasal|ponerse al día|alcanzar|B1|reach the same point
+37|cheer up|cheer up|phrasal|animarse|animar|A2|become happier
+38|clean up|clean up|phrasal|limpiar|recoger|A2|make tidy
+39|come across|come across|phrasal|encontrarse con|toparse|B2|meet by chance
+40|count on|count on|phrasal|contar con|confiar en|B1|rely on someone
+41|cut down|cut down|phrasal|reducir|recortar|B1|use less of something
+42|deal with|deal with|phrasal|lidiar con|ocuparse de;tratar|B1|handle a problem
+43|end up|end up|phrasal|acabar|terminar|B1|finish in a situation
+44|figure out|figure out|phrasal|averiguar|entender;resolver|B1|work something out
+45|fill in|fill in|phrasal|rellenar|completar|A2|complete a form
+46|fill out|fill out|phrasal|rellenar|completar|A2|complete a form
+47|focus on|focus on|phrasal|centrarse en|concentrarse|B1|give attention to
+48|get along|get along|phrasal|llevarse bien|congeniar|B1|have a good relationship
+49|get away|get away|phrasal|escaparse|huir|B1|escape
+50|get back|get back|phrasal|volver|recuperar|A2|return
+51|get over|get over|phrasal|superar|recuperarse de|B2|recover from something
+52|get rid of|get rid of|phrasal|deshacerse de|librarse de|B1|remove something unwanted
+53|get through|get through|phrasal|superar|comunicar|B2|survive a difficult time
+54|give back|give back|phrasal|devolver|-|A2|return something
+55|give in|give in|phrasal|ceder|rendirse|B2|stop resisting
+56|go ahead|go ahead|phrasal|adelante|proceder|A2|proceed
+57|go away|go away|phrasal|irse|marcharse|A1|leave
+58|go over|go over|phrasal|repasar|revisar|B1|review carefully
+59|grow up|grow up|phrasal|crecer|criarse|A2|become an adult
+60|hang on|hang on|phrasal|esperar|aguantar|A2|wait a moment
+61|hang out|hang out|phrasal|pasar el rato|-|B1|spend time relaxing
+62|hold on|hold on|phrasal|esperar|agarrarse|A2|wait
+63|keep on|keep on|phrasal|seguir|continuar|B1|continue doing
+64|keep up|keep up|phrasal|mantener el ritmo|seguir|B2|stay level with
+65|let down|let down|phrasal|decepcionar|fallar|B2|disappoint someone
+66|look around|look around|phrasal|mirar alrededor|echar un vistazo|A2|explore a place
+67|look into|look into|phrasal|investigar|examinar|B2|examine a matter
+68|look out|look out|phrasal|tener cuidado|-|A2|be careful
+69|look up|look up|phrasal|buscar|consultar|B1|search in a reference
+70|make up|make up|phrasal|inventar|reconciliarse;maquillar|B1|invent a story
+71|move on|move on|phrasal|seguir adelante|pasar a otra cosa|B1|leave something behind
+72|pass away|pass away|phrasal|fallecer|morir|B2|die
+73|pay back|pay back|phrasal|devolver|pagar|B1|return money
+74|pick out|pick out|phrasal|elegir|escoger|B1|select from a group
+75|point out|point out|phrasal|señalar|indicar|B1|draw attention to
+76|put away|put away|phrasal|guardar|recoger|A2|store in its place
+77|put down|put down|phrasal|dejar|soltar;apuntar|A2|place on a surface
+78|put out|put out|phrasal|apagar|extinguir|B1|stop a fire
+79|put up with|put up with|phrasal|aguantar|soportar|B2|tolerate
+80|run into|run into|phrasal|toparse con|encontrarse|B1|meet by chance
+81|set up|set up|phrasal|montar|establecer;configurar|B1|establish or arrange
+82|show up|show up|phrasal|aparecer|presentarse|B1|arrive
+83|shut up|shut up|phrasal|callarse|-|A2|stop talking
+84|sort out|sort out|phrasal|resolver|arreglar;ordenar|B1|solve a problem
+85|take away|take away|phrasal|quitar|llevarse|A2|remove
+86|take care of|take care of|phrasal|cuidar de|encargarse de|A2|look after
+87|take over|take over|phrasal|tomar el control|hacerse cargo|B2|take control
+88|take up|take up|phrasal|empezar|ocupar|B2|start a hobby
+89|throw away|throw away|phrasal|tirar|desechar|A2|discard
+90|try on|try on|phrasal|probarse|-|A2|test clothing
+91|turn around|turn around|phrasal|darse la vuelta|girar|A2|face the other way
+92|turn out|turn out|phrasal|resultar|salir|B2|prove to be
+93|turn up|turn up|phrasal|aparecer|subir el volumen|B1|arrive unexpectedly
+94|wait for|wait for|phrasal|esperar a|-|A1|stay until someone comes
+95|warm up|warm up|phrasal|calentar|calentarse|A2|make warmer
+96|work out|work out|phrasal|hacer ejercicio|resolver;salir bien|B1|exercise
+97|write down|write down|phrasal|apuntar|anotar|A2|note on paper
+98|come out|come out|phrasal|salir|publicarse|A2|become known
+99|go down|go down|phrasal|bajar|descender|A2|decrease
+100|go up|go up|phrasal|subir|aumentar|A2|increase

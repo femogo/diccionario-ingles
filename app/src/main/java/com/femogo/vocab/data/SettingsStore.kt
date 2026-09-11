@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "ajustes")
@@ -17,29 +18,23 @@ private val Context.dataStore by preferencesDataStore(name = "ajustes")
  */
 data class Settings(
     val optionCount: Int = 4,
-    /** Huella del diccionario instalado, para saber si hay novedades. */
-    val dictionaryHash: String? = null,
-    /**
-     * Las últimas respuestas, como unos y ceros. Se guarda para que cerrar la
-     * aplicación no reinicie el ajuste de dificultad: el juego es continuo y
-     * cerrarlo no debería ser un corte.
-     */
-    val ultimasRespuestas: String = "",
-    /**
-     * Preguntas respondidas en total. Hace de reloj del juego: el espaciado se
-     * mide en turnos, así que esto es lo único que avanza.
-     */
-    val turno: Int = 0
+    /** Módulo que se está jugando. */
+    val moduloActivo: String = AppDatabase.MODULO_INICIAL
 )
+
+/**
+ * El avance de cada módulo se guarda por separado: cada juego lleva su propia
+ * cuenta de preguntas respondidas y su propia racha reciente, porque su
+ * espaciado es independiente.
+ */
+data class AvanceModulo(val turno: Int = 0, val ultimasRespuestas: String = "")
 
 class SettingsStore(private val context: Context) {
 
     val flow: Flow<Settings> = context.dataStore.data.map { prefs ->
         Settings(
             optionCount = prefs[KEY_OPTIONS] ?: 4,
-            dictionaryHash = prefs[KEY_DICT_HASH],
-            ultimasRespuestas = prefs[KEY_ULTIMAS] ?: "",
-            turno = prefs[KEY_TURNO] ?: 0
+            moduloActivo = prefs[KEY_MODULO] ?: AppDatabase.MODULO_INICIAL
         )
     }
 
@@ -47,22 +42,29 @@ class SettingsStore(private val context: Context) {
         context.dataStore.edit { it[KEY_OPTIONS] = value.coerceIn(2, 6) }
     }
 
-    suspend fun setDictionaryHash(hash: String) {
-        context.dataStore.edit { it[KEY_DICT_HASH] = hash }
+    suspend fun setModuloActivo(id: String) {
+        context.dataStore.edit { it[KEY_MODULO] = id }
     }
 
-    suspend fun setUltimasRespuestas(valor: String) {
-        context.dataStore.edit { it[KEY_ULTIMAS] = valor }
+    suspend fun avanceDe(modulo: String): AvanceModulo {
+        val prefs = context.dataStore.data.first()
+        return AvanceModulo(
+            turno = prefs[turnoDe(modulo)] ?: 0,
+            ultimasRespuestas = prefs[ultimasDe(modulo)] ?: ""
+        )
     }
 
-    suspend fun setTurno(valor: Int) {
-        context.dataStore.edit { it[KEY_TURNO] = valor }
+    suspend fun guardarAvance(modulo: String, turno: Int, ultimasRespuestas: String) {
+        context.dataStore.edit {
+            it[turnoDe(modulo)] = turno
+            it[ultimasDe(modulo)] = ultimasRespuestas
+        }
     }
 
     private companion object {
         val KEY_OPTIONS = intPreferencesKey("options")
-        val KEY_DICT_HASH = stringPreferencesKey("dict_hash")
-        val KEY_ULTIMAS = stringPreferencesKey("ultimas_respuestas")
-        val KEY_TURNO = intPreferencesKey("turno")
+        val KEY_MODULO = stringPreferencesKey("modulo_activo")
+        fun turnoDe(modulo: String) = intPreferencesKey("turno_$modulo")
+        fun ultimasDe(modulo: String) = stringPreferencesKey("ultimas_$modulo")
     }
 }
