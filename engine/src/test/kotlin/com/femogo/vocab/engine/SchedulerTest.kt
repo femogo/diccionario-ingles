@@ -11,29 +11,59 @@ class SchedulerTest {
     private val catalog = catalog(100)
 
     @Test
-    fun `las vencidas van antes que las nuevas`() {
+    fun `los repasos vencidos entran en la cola`() {
         val cards = mapOf(
             80 to Card(rank = 80, box = 2, dueAt = now - 1000, seen = 3),
             90 to Card(rank = 90, box = 3, dueAt = now - 5000, seen = 4)
         )
-        val cola = scheduler.buildQueue(catalog, cards, now, size = 5)
-        assertEquals(listOf(80, 90), cola.take(2).map { it.rank })
+        val cola = scheduler.buildQueue(catalog, cards, now, size = 5).map { it.rank }
+
+        assertTrue(80 in cola && 90 in cola, "lo vencido no puede quedarse fuera")
     }
 
     @Test
     fun `entre vencidas manda la caja mas baja`() {
-        val cards = mapOf(
-            10 to Card(rank = 10, box = 4, dueAt = now - 9999, seen = 8),
-            20 to Card(rank = 20, box = 1, dueAt = now - 10, seen = 2)
-        )
-        val cola = scheduler.buildQueue(catalog, cards, now, size = 2)
-        assertEquals(20, cola.first().rank, "lo que peor se sabe se pregunta antes")
+        val cards = (1..20).associateWith { Card(it, box = 4, dueAt = now - 100, seen = 8) }
+            .toMutableMap()
+        cards[20] = Card(20, box = 1, dueAt = now - 10, seen = 2)
+
+        val vencidasEnCola = scheduler.buildQueue(catalog, cards, now, size = 6)
+            .map { it.rank }
+            .filter { it in cards }
+
+        assertEquals(20, vencidasEnCola.first(), "lo que peor se sabe se repasa antes")
+    }
+
+    @Test
+    fun `la cola mezcla novedades con repasos en vez de agruparlas`() {
+        // Diez palabras nuevas seguidas es donde se abandona.
+        val cards = (1..30).associateWith { Card(it, box = 2, dueAt = now - 100, seen = 2) }
+        val cola = scheduler.buildQueue(catalog, cards, now, size = 20)
+        val esNueva = cola.map { it.rank !in cards }
+
+        val rachaMax = esNueva.fold(0 to 0) { (max, actual), nueva ->
+            val siguiente = if (nueva) actual + 1 else 0
+            maxOf(max, siguiente) to siguiente
+        }.first
+        assertTrue(rachaMax <= 3, "racha de novedades seguidas: $rachaMax")
     }
 
     @Test
     fun `las palabras nuevas entran por orden de frecuencia`() {
         val cola = scheduler.buildQueue(catalog, emptyMap(), now, size = 4)
         assertEquals(listOf(1, 2, 3, 4), cola.map { it.rank })
+    }
+
+    @Test
+    fun `reparte las novedades entre niveles en vez de agotar el primero`() {
+        val variado = Cefr.entries.flatMapIndexed { i, cefr ->
+            (1..50).map { word(rank = i * 50 + it, cefr = cefr) }
+        }
+        val niveles = scheduler.buildQueue(variado, emptyMap(), now, size = 30)
+            .map { it.cefr }.toSet()
+
+        assertTrue(niveles.size >= 2, "con el diccionario entero por delante debe variar")
+        assertTrue(Cefr.A1 in niveles, "pero el grueso sigue saliendo de abajo")
     }
 
     @Test

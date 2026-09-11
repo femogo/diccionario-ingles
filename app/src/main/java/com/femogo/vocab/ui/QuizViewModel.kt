@@ -58,6 +58,15 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     private var cola = ArrayDeque<Word>()
     private var optionCount = 4
 
+    // Ventana corta de resultados. El planificador la usa para mezclar más
+    // material difícil cuando se va sobrado, y menos cuando se atasca. Un
+    // porcentaje de toda la vida no serviría: tardaría semanas en moverse.
+    private val ultimas = ArrayDeque<Boolean>()
+
+    private val aciertoReciente: Float?
+        get() = if (ultimas.size < MINIMO_PARA_AJUSTAR) null
+        else ultimas.count { it }.toFloat() / ultimas.size
+
     init { arrancar() }
 
     fun arrancar() {
@@ -97,7 +106,13 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun rellenar() {
         val pendientes = cola.map { it.rank }.toSet()
-        scheduler.buildQueue(catalog, cards, System.currentTimeMillis(), size = TAMAÑO_COLA)
+        scheduler.buildQueue(
+            catalog = catalog,
+            cards = cards,
+            now = System.currentTimeMillis(),
+            size = TAMAÑO_COLA,
+            aciertoReciente = aciertoReciente
+        )
             .filter { it.rank !in pendientes }
             .forEach { cola.addLast(it) }
     }
@@ -133,6 +148,9 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
         val actualizada = leitner.answer(card, acierto, ahora)
         cards[question.word.rank] = actualizada
 
+        ultimas.addLast(acierto)
+        while (ultimas.size > VENTANA) ultimas.removeFirst()
+
         _state.value = actual.copy(
             chosenIndex = chosen,
             respondidas = actual.respondidas + 1,
@@ -167,5 +185,8 @@ class QuizViewModel(app: Application) : AndroidViewModel(app) {
     private companion object {
         const val TAMAÑO_COLA = 40
         const val RELLENAR_BAJO = 8
+        /** Respuestas que se tienen en cuenta para medir cómo va la cosa. */
+        const val VENTANA = 50
+        const val MINIMO_PARA_AJUSTAR = 15
     }
 }

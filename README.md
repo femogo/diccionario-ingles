@@ -36,6 +36,32 @@ no lo hay. Aquí los distractores comparten categoría gramatical con la respues
 correcta, salen de una banda de frecuencia parecida, y nunca son también válidos
 como traducción.
 
+## Qué se pregunta y de dónde sale
+
+Cada vez que la cola se rellena, se arma en tres capas: una reserva de palabras
+nuevas, los repasos ya vencidos empezando por las cajas bajas, y si sobra sitio,
+lo que vence más pronto. Las novedades se intercalan con los repasos en vez de
+salir en bloque: diez palabras desconocidas seguidas es donde se abandona.
+
+**El reparto entre niveles no es una tabla fija.** El peso de cada nivel es lo
+que le falta por dominar, atenuado por lo abierto que esté —un nivel se abre del
+todo cuando el anterior tiene una base—. Así A1 acapara al principio y cede sitio
+a A2 y B1 por sí solo, sin números escritos a mano que recalibrar cada vez que
+cambia el diccionario. La tasa de acierto de las últimas 50 respuestas mueve el
+centro de gravedad: yendo sobrado se mezcla más material difícil, atascándose se
+concentra abajo.
+
+**La reserva de novedades cede cuando hay atasco**, y esto costó dos intentos.
+Con reserva fija del 35 %, medido en simulación a tres meses: 2053 palabras
+vistas en lugar de 670, y **ninguna** en la última caja, frente a 367. Entraban
+palabras nuevas más deprisa de lo que se podían repasar y la deuda crecía sin
+límite. Ahora la reserva se divide por lo desbordada que esté la capacidad de
+repaso y solo conserva un mínimo, para que descubrir nunca se pare del todo.
+
+Con eso, a tres meses: 681 palabras vistas, 317 en la última caja, y cinco
+niveles tocados en lugar de dos. Cuesta que A1 tarde más en asentarse —69 % en
+vez de 95 %— porque el esfuerzo se reparte. Es el intercambio que se eligió.
+
 ## La barra de nivel
 
 Sobre la pregunta hay una escala del marco europeo, un tramo por nivel, que se
