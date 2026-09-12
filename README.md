@@ -255,8 +255,19 @@ Frecuencia: OpenSubtitles 2018, de
 filtrada a palabras alfabéticas. Refleja inglés hablado, que es lo que interesa
 para aprender, en vez de frecuencia de corpus web.
 
-Traducciones: volcado de Wiktionary EN-ES, **CC BY-SA**. Eso obliga a atribuir y
-a mantener la misma licencia si el diccionario se redistribuye.
+Traducciones: volcado bilingüe de
+[mananoreboton/en-es-en-Dic](https://github.com/mananoreboton/en-es-en-Dic),
+cuyo contenido procede de Wiktionary.
+
+**Ese repositorio no declara licencia**, y sin licencia explícita se aplican
+todos los derechos reservados por defecto. Para uso personal no hay problema;
+para distribuir la aplicación, y mucho menos para cobrar por ella, haría falta
+rehacer el diccionario desde una fuente cuyos términos estén claros —el volcado
+de Wiktionary directamente, que es CC BY-SA y obliga a atribuir y a mantener la
+misma licencia— o generarlo de cero.
+
+La lista de frecuencia sí trae licencia MIT, aunque sus datos derivan de
+subtítulos de OpenSubtitles, cuyos términos son cosa aparte.
 
 Las traducciones **no están revisadas una a una**. Para uso personal va sobrado;
-antes de publicar la app habría que repasarlas.
+antes de publicar la aplicación habría que repasarlas.
